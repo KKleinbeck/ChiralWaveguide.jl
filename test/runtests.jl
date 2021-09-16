@@ -1,6 +1,8 @@
 using ChiralWaveguide
 using Test
 
-@testset "ChiralWaveguide.jl" begin
-    # Write your tests here.
-end
+include("WavePackets.jl")
+
+include("WaveguideProblems.jl")
+
+include("Systems.jl")
