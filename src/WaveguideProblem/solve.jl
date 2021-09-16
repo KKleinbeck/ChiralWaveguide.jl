@@ -12,7 +12,7 @@ Returns:
 - ρ(t):  The density matrix at each point in time. The Hilbert space depends on the
          parameters given, if unsure about the result check out `ρ.basis_l`
 """
-function solve(problem::Problem; Nouts = nothing, kwargs...) where Problem <: WaveguideProblem
+function solve(problem::WaveguideProblem; Nouts::Union{Nothing,Array} = nothing, kwargs...)
 	if problem isa _ScatterProblem
 		if isnothing(Nouts)
 			Nouts = fill(problem.ψᵢ.state.N_cutoff, length(problem.ψₒ))
@@ -217,29 +217,3 @@ function _generateLindbladian(problem::_ScatterProblem{O, <: NonDisplaced}, Nout
 	ψ₀ = Ket(inBasis, createState(problem.ψᵢ.state)) ⊗ problem.system_state ⊗ groundstateOutput
 	return ψ₀, [t -> L(t), [idᵢ ⊗ L ⊗ idₒ for L ∈ problem.Ls]...], H_nh
 end
-
-# 	gₒs = [mode.gₒ for mode in outputModes]
-#
-# 	gₒaₒs(t)  = sum(gₒs(t) .* aₒs)
-# 	gₒaₒᵀs(t) = sum(gₒs(t) .* aₒᵀs)
-#
-# 	aᵢᵀσ⁻,  aᵢσ⁺   = aᵢᵀ * σ⁻, aᵢ * σ⁺
-# 	aₒᵀσ⁻s, aₒσ⁺s  = [aₒᵀ * σ⁻ for aₒᵀ in aₒᵀs], [aₒ  * σ⁺ for aₒ  in aₒᵀs]
-# 	aᵢᵀaₒs, aₒᵀaᵢs = [aᵢᵀ * aₒ for aₒ  in aₒs],  [aₒᵀ * aᵢ for aₒᵀ in aₒᵀs]
-#
-# 	σ⁺σ⁻, aᵢᵀaᵢ, aₒᵀaₒs = σ⁺ * σ⁻, aᵢᵀ * aᵢ, aₒᵀs .* aₒs
-#
-# 	# Hamiltonian and decay operators
-# 	L = t -> σ⁻ + gᵢ(t)aᵢ + gₒaₒs(t)
-# 	atomDissipators = tuple([idᵢ ⊗ D for D in atomDissipators]...)
-#
-# 	function H_int(t, ψ)
-# 		return -0.5im * (σ⁺σ⁻ + gᵢ(t)^2 * aᵢᵀaᵢ  + sum( (gₒs(t).^2) .* aₒᵀaₒs) ) -
-# 			1.0im * (gᵢ(t)aᵢσ⁺ + sum(gₒs(t) .* aₒᵀσ⁻s) + sum(gᵢ(t) .* gₒs(t) .* aₒᵀaᵢs) ) +
-# 			idᵢ ⊗ H_atoms
-# 	end
-#
-# 	basis = inBasis ⊗ atomBasis ⊗ outBasis
-# 	ψ₀    = initialPhotons(inBasis, initialWavePacket.wpType) ⊗ groundstateAtoms ⊗ groundstateOutput
-# 	return basis, ψ₀, (L, atomDissipators...), H_int
-# end

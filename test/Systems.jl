@@ -29,7 +29,8 @@ end
 @testset "Perfect Absorption" begin
 	# ----------------------------------------
 	# With a suitable state perfect absorption is almost possible
-  γd =  0.7*rand() + 0.15
+  γd =  0.65*rand() + 0.3 # smaller γd need more careful numerical treatment
+	γd =  0.3
   t₀ = -10.0/(1 - γd)
 
 	mode = Mode(
@@ -48,29 +49,29 @@ end
 
   # Project on the Rydberg manifold
   σ_Ryd = transition(NLevelBasis(3), 2, 2) + transition(NLevelBasis(3), 3, 3)
-  @test real( 1 - expect(σ_Ryd, solA) ) < 2e-4
+  @test real( 1 - expect(σ_Ryd, solA) ) < 1e-4
 
 
 	problemB = WaveguideProblem(
 		DissipativeLambdaChain(1, γd = γd),
 		WavePacket(mode, Fock(1)),
-		(t₀, 6.0)
+		(t₀, 10.0)
 	)
   solB = ptrace.(solve(problemB, reltol = 1e-10)[2], 1)[end]
 
   # Project on the groundstate
   σ_GG = transition(NLevelBasis(3), 1, 1)
-  @test abs( (1 - γd) / (1 + γd) - expect(σ_GG, solB) ) < 2e-4
+  @test abs( (1 - γd) / (1 + γd) - expect(σ_GG, solB) ) < 1e-4
 
   # Project on the dark state
   σ_DD = transition(NLevelBasis(3), 3, 3)
-  @test abs( 2γd / (1 + γd) - expect(σ_DD, solB) ) < 2e-4
+  @test abs( 2γd / (1 + γd) - expect(σ_DD, solB) ) < 1e-4
 end
 
 @testset "Two Atom scattering" begin
 	# ----------------------------------------
 	# Exact result for scattering a Gaussian mode
-  σ = 1 + rand()
+  σ = 1 + rand() # smaller σ need more careful numerical treatment
   function twoAtomOut(x)
     norm = √(√(π)*σ)
 

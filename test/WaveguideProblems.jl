@@ -65,7 +65,7 @@ end
 	)
   solB     = solve(problemB, reltol = 1e-10)[2]
 
-  @test tracedistance.(solA, solB) |> sum < 1e-5
+  @test sum(tracedistance.(solA, solB)) < 1e-5
 end
 
 @testset "ScatterProblem - Mollow transform" begin
@@ -86,5 +86,26 @@ end
 	)
   solB     = solve(problemB, Nouts = [6], reltol = 1e-10)[2]
 
-  @test tracedistance.(solA, solB) |> sum < 1e-4
+  @test sum(tracedistance.(solA, solB)) < 1e-4
+end
+
+@testset "Controlling the output Fock space" begin
+	# ----------------------------------------
+	# Compare the Mollow transform to a manual coherent state
+  testBasis = SpinBasis(1//2)
+  σm, σp = sigmam(testBasis), sigmap(testBasis)
+
+  problemA = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+    WavePacket(SoftBoxMode(τ = 1.0), Coherent(1.0, 10)),
+		SoftBoxMode(τ = 2.0), 3.
+  )
+  solA     = solve(problemA, reltol = 1e-10)[2]
+
+  problemB = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+		WavePacket(SoftBoxMode(τ = 1.0), Coherent(1.0)),
+		SoftBoxMode(τ = 2.0), 3.
+	)
+  solB     = solve(problemB, Nouts = [10], reltol = 1e-10)[2]
+
+  @test sum(tracedistance.(solA, solB)) < 1e-10
 end
