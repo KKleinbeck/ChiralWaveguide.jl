@@ -3,7 +3,6 @@ module ChiralWaveguide
 using Reexport
 
 @reexport using QuantumOptics
-# ⊗ = QuantumOptics.tensor
 
 include("WavePackets/WavePackets.jl")
 export WavePacket

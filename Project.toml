@@ -4,10 +4,11 @@ authors = ["Kevin Kleinbeck <kleinbeck@itp3.uni-stuttgart.de"]
 version = "0.0.1"
 
 [deps]
-OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+HypergeometricFunctions = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
 QuantumOptics = "6e0679c1-51ea-5a7c-ac74-d61b76210b0c"
-QuantumOpticsBase = "4f57444f-1401-5e15-980d-4471b28d5678"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 

@@ -1,4 +1,3 @@
-# using OrdinaryDiffEq
 using DifferentialEquations: ODEProblem, DifferentialEquations
 
 @inline function __integrate(u::Function, domain::Tuple{T,T}; kwargs...) where T <: AbstractFloat

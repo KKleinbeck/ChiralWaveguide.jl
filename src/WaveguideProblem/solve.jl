@@ -1,9 +1,4 @@
-# import QuantumOpticsBase:tensor
 import SciMLBase:solve
-
-# tensor(a, b::Nothing) = a
-# tensor(a::Nothing, b) = b
-# ⊗ = tensor
 
 """
 solve(problem::WaveguideProblem, args...; [Nouts], kwargs...)
