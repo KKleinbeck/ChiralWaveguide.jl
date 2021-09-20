@@ -13,6 +13,13 @@ SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
+HypergeometricFunctions = "0.3"
+QuadGK = "2"
+Reexport = "1"
+SciMLBase = "1"
+DifferentialEquations = "6"
+SpecialFunctions = "1"
+QuantumOptics = "1"
 julia = "1.2"
 
 [extras]
