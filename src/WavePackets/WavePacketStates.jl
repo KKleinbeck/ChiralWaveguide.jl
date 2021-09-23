@@ -6,8 +6,8 @@ struct Coherent <: WavePacketState
 end
 # magic numbers choosen so that for α ∈ [0,10] the normalisation of the state is above 0.999
 coherent_cutoff(α)::Int = ceil(Int, abs(α) * (abs(α) + 3.5) + 0.45 * √(abs(α)))
-Coherent(α)           = Coherent(Complex{Float64}(α), coherent_cutoff(α))
-Coherent(α, N_cutoff) = Coherent(Complex{Float64}(α), N_cutoff)
+Coherent(α)                    = Coherent(Complex{Float64}(α), coherent_cutoff(α))
+Coherent(α::Float64, N_cutoff) = Coherent(Complex{Float64}(α), N_cutoff)
 
 abstract type Displaced    <: WavePacketState end
 abstract type NonDisplaced <: WavePacketState end
