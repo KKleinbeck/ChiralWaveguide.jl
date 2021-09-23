@@ -1,5 +1,3 @@
-import SciMLBase:solve
-
 """
 solve(problem::WaveguideProblem, args...; [Nouts], kwargs...)
 
@@ -15,7 +13,11 @@ Returns:
 function solve(problem::WaveguideProblem; Nouts::Union{Nothing,Array} = nothing, kwargs...)
 	if problem isa _ScatterProblem
 		if isnothing(Nouts)
-			Nouts = fill(problem.ψᵢ.state.N_cutoff, length(problem.ψₒ))
+			N = problem.ψᵢ.state.N_cutoff
+			if problem.ψᵢ.state isa Displaced
+				N += coherent_cutoff(problem.ψᵢ.state.α)
+			end
+			Nouts = fill(N, length(problem.ψₒ))
 		end
 		@assert length(Nouts) == length(problem.ψₒ)
 	end
@@ -66,7 +68,7 @@ function _generateLindbladian(problem::_DrivenProblem{O, Coherent}, Nouts) where
 	return ψ₀, [t -> σ⁻, problem.Ls...], H_nh
 end
 
-function _generateLindbladian(problem::_DrivenProblem{O, <: NonDisplaced}, Nouts) where {O}
+function _generateLindbladian(problem::_DrivenProblem{O, T}, Nouts) where {O, T}
 	# ----------------------------------------
 	# Scatter System
 	H_sys, σ⁻, σ⁺  = problem.H, problem.σ, problem.σ'
@@ -89,15 +91,31 @@ function _generateLindbladian(problem::_DrivenProblem{O, <: NonDisplaced}, Nouts
 	# ----------------------------------------
 	# Constructing Disspator and Hamiltonian
 	L  = t -> σ⁻ + gᵢ(t)aᵢ
+	Lᵀ = t -> σ⁺ + gᵢ(t)aᵢᵀ
 
 	dissipative_part = isempty(problem.Ls) ?
 		-0.5im * σ⁺σ⁻ :
 		-0.5im * σ⁺σ⁻ - (0.5im * idᵢ) ⊗ sum([L'*L for L ∈ problem.Ls])
 
-	H_nh(t) = dissipative_part - 0.5im * gᵢ(t)^2 * aᵢᵀaᵢ - 1.0im * gᵢ(t)aᵢσ⁺ + H_sys
+	H_nh = _createHamiltonian(problem, dissipative_part, aᵢᵀaᵢ, aᵢσ⁺, σ⁺, σ⁻, H_sys)
 
 	ψ₀ = Ket(inBasis, createState(problem.ψᵢ.state)) ⊗ problem.system_state
-	return ψ₀, [t -> σ⁻ + gᵢ(t)aᵢ, [idᵢ ⊗ L for L ∈ problem.Ls]...], H_nh
+	return ψ₀, [L, [idᵢ ⊗ L for L ∈ problem.Ls]...], H_nh
+end
+
+function _createHamiltonian(problem::_DrivenProblem{O, <: Displaced},
+		dissipative_part, aᵢᵀaᵢ, aᵢσ⁺, σ⁺, σ⁻, H_sys) where {O}
+	gᵢ, mf, α = problem.ψᵢ.mode.gᵢ, problem.ψᵢ.mode.modeFunction, problem.ψᵢ.state.α
+
+	return t -> dissipative_part - 0.5im * gᵢ(t)^2 * aᵢᵀaᵢ -
+		1.0im * (σ⁺ * α * mf(t) - σ⁻ * α' * mf(t)') - 1.0im * gᵢ(t)aᵢσ⁺ + H_sys
+end
+
+function _createHamiltonian(problem::_DrivenProblem{O, <: NonDisplaced},
+		dissipative_part, aᵢᵀaᵢ, aᵢσ⁺, σ⁺, σ⁻, H_sys) where {O}
+	gᵢ = problem.ψᵢ.mode.gᵢ
+
+	return t -> dissipative_part - 0.5im * gᵢ(t)^2 * aᵢᵀaᵢ - 1.0im * gᵢ(t)aᵢσ⁺ + H_sys
 end
 
 # ------------------------------------------------------------
@@ -139,15 +157,11 @@ function _generateLindbladian(problem::_ScatterProblem{O, Coherent}, Nouts) wher
 	dissipative_part = isempty(problem.Ls) ?
 		-0.5im * σ⁺σ⁻ :
 		-0.5im * σ⁺σ⁻ - 0.5im * sum([L'*L for L ∈ problem.Ls]) ⊗ idₒ
-	# function H_nh(t)
-	# 	return -0.5im * Lᵀ(t) * L(t) -
-	# 		0.5im * (σ⁻ * gₒaₒᵀs(t) - σ⁺ * gₒaₒs(t) ) -
-	# 		1.0im * (Lᵀ(t) * α * mf(t) - L(t) * α * mf(t)) +
-	# 		H_sys
-	# end
+
 	function H_nh(t)
 		return dissipative_part - 0.5im * sum([gₒ(t)^2 for gₒ ∈ gₒs] .* aₒᵀaₒs) -
-			1.0im * sum([gₒ(t) for gₒ ∈ gₒs] .* aₒᵀσ⁻s) - 1.0im * (Lᵀ(t) * α * mf(t) - L(t) * α * mf(t)) +
+			1.0im * sum([gₒ(t) for gₒ ∈ gₒs] .* aₒᵀσ⁻s) -
+			1.0im * (Lᵀ(t) * α * mf(t) - L(t) * α' * mf(t)) +
 			H_sys
 	end
 
@@ -201,12 +215,6 @@ function _generateLindbladian(problem::_ScatterProblem{O, <: NonDisplaced}, Nout
 		-0.5im * σ⁺σ⁻ :
 		-0.5im * σ⁺σ⁻ - (0.5im * idᵢ) ⊗ sum([L'*L for L ∈ problem.Ls]) ⊗ idₒ
 
-	# function H_nh(t)
-	# 	return -0.5im * Lᵀ(t) * L(t) -
-	# 		0.5im * (σ⁻ * gₒaₒᵀs(t) - σ⁺ * gₒaₒs(t) ) -
-	# 		1.0im * (Lᵀ(t) * α * mf(t) - L(t) * α * mf(t)) +
-	# 		H_sys
-	# end
 	function H_nh(t)
 		return dissipative_part - 0.5im * (gᵢ(t)^2 * aᵢᵀaᵢ + sum([gₒ(t)^2 for gₒ ∈ gₒs] .* aₒᵀaₒs) ) -
 			1.0im * (gᵢ(t)aᵢσ⁺ + sum([gₒ(t) for gₒ ∈ gₒs] .* aₒᵀσ⁻s) +

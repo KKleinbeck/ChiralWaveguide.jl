@@ -91,7 +91,7 @@ end
 
 @testset "Controlling the output Fock space" begin
 	# ----------------------------------------
-	# Compare the Mollow transform to a manual coherent state
+	# Setting the cutoff vs. setting `Nouts`
   testBasis = SpinBasis(1//2)
   σm, σp = sigmam(testBasis), sigmap(testBasis)
 
@@ -108,4 +108,46 @@ end
   solB     = solve(problemB, Nouts = [10], reltol = 1e-10)[2]
 
   @test sum(tracedistance.(solA, solB)) < 1e-10
+end
+
+@testset "DrivenProblem - DisplacedFock" begin
+	# ----------------------------------------
+	# Compare the `DisplacedFock` implementation to the manually created version
+  testBasis = SpinBasis(1//2)
+  σm, σp = sigmam(testBasis), sigmap(testBasis)
+
+	aᵀ, ψα = create(FockBasis(13)), coherentstate(FockBasis(13), 1.0)
+	data = (aᵀ * ψα - ψα).data
+  problemA = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+    WavePacket(SoftBoxMode(τ = 1.0), ArbitraryState(data)), 3.
+  )
+  solA     = ptrace.(solve(problemA, reltol = 1e-10)[2], 1)
+
+  problemB = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+		WavePacket(SoftBoxMode(τ = 1.0), DisplacedFock(1.0, 1)), 3.
+	)
+  solB     = ptrace.(solve(problemB, reltol = 1e-10)[2], 1)
+
+  @test sum(tracedistance.(solA, solB)) < 1e-5
+end
+
+@testset "DrivenProblem - DisplacedArbitraryState" begin
+	# ----------------------------------------
+	# Compare the `DisplacedArbitraryState` implementation to the manually created version
+  testBasis = SpinBasis(1//2)
+  σm, σp = sigmam(testBasis), sigmap(testBasis)
+
+	aᵀ, ψα = create(FockBasis(13)), coherentstate(FockBasis(13), 1.0)
+	data = (aᵀ * ψα - ψα).data
+  problemA = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+    WavePacket(SoftBoxMode(τ = 1.0), ArbitraryState(data)), 3.
+  )
+  solA     = ptrace.(solve(problemA, reltol = 1e-10)[2], 1)
+
+  problemB = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+		WavePacket(SoftBoxMode(τ = 1.0), DisplacedArbitraryState(1.0, [0.0im, 1.0])), 3.
+	)
+  solB     = ptrace.(solve(problemB, reltol = 1e-10)[2], 1)
+
+  @test sum(tracedistance.(solA, solB)) < 1e-5
 end

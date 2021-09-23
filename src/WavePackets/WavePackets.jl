@@ -8,7 +8,8 @@ export Mode, HardBoxMode, SoftBoxMode, SoftBoxExpMode, GaussMode, FlatMode
 
 include("./WavePacketStates.jl")
 export WavePacketState, Displaced, NonDisplaced,
-  Coherent, ArbitraryState, Fock, SqueezedVacuum, createState
+  Coherent, ArbitraryState, Fock, SqueezedVacuum, createState,
+  DisplacedArbitraryState, DisplacedFock
 
 mutable struct WavePacket{T <: WavePacketState}
   mode::Mode

@@ -10,6 +10,7 @@ export WavePacket
 include("WaveguideProblem/WaveguideProblem.jl")
 export WaveguideProblem
 
+import SciMLBase: solve
 include("WaveguideProblem/solve.jl")
 export solve
 
