@@ -151,3 +151,46 @@ end
 
   @test sum(tracedistance.(solA, solB)) < 1e-5
 end
+
+@testset "ScatterProblem - DisplacedFock" begin
+	# ----------------------------------------
+	# Compare the `DisplacedFock` implementation to the manually created version
+  testBasis = SpinBasis(1//2)
+  σm, σp = sigmam(testBasis), sigmap(testBasis)
+
+	aᵀ, ψα = create(FockBasis(13)), coherentstate(FockBasis(13), 1.0)
+	data = (aᵀ * ψα - ψα).data
+  problemA = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+    WavePacket(SoftBoxMode(τ = 1.0), ArbitraryState(data)), SoftBoxMode(τ = 2.0), 3.
+  )
+  solA     = ptrace.(solve(problemA, reltol = 1e-10)[2], 1)
+
+  problemB = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+		WavePacket(SoftBoxMode(τ = 1.0), DisplacedFock(1.0, 1)), SoftBoxMode(τ = 2.0), 3.
+	)
+  solB     = ptrace.(solve(problemB, Nouts = [13], reltol = 1e-10)[2], 1)
+
+  @test sum(tracedistance.(solA, solB)) < 1e-4
+end
+
+@testset "DrivenProblem - DisplacedArbitraryState" begin
+	# ----------------------------------------
+	# Compare the `DisplacedArbitraryState` implementation to the manually created version
+  testBasis = SpinBasis(1//2)
+  σm, σp = sigmam(testBasis), sigmap(testBasis)
+
+	aᵀ, ψα = create(FockBasis(13)), coherentstate(FockBasis(13), 1.0)
+	data = (aᵀ * ψα - ψα).data
+  problemA = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+    WavePacket(SoftBoxMode(τ = 1.0), ArbitraryState(data)), SoftBoxMode(τ = 2.0), 3.
+  )
+  solA     = ptrace.(solve(problemA, reltol = 1e-10)[2], 1)
+
+  problemB = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+		WavePacket(SoftBoxMode(τ = 1.0), DisplacedArbitraryState(1.0, [0.0im, 1.0])),
+		SoftBoxMode(τ = 2.0), 3.
+	)
+  solB     = ptrace.(solve(problemB, Nouts = [13], reltol = 1e-10)[2], 1)
+
+  @test sum(tracedistance.(solA, solB)) < 1e-4
+end
