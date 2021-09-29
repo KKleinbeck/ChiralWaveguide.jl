@@ -5,16 +5,14 @@ using DifferentialEquations: ODEProblem, DifferentialEquations
 	return DifferentialEquations.solve(prob; kwargs...)
 end
 
-# TODO test and think how to implement scaling for the compressions.
-#      I am thinking something like comp(t) - > comp(t/s) and decomp(τ) -> s*decomp(τ)
-#      This could help with sharpely peaked functions like box functions.
 @inline function __getNorm(u::Function, c::Compression; kwargs...)
+	σ, μ = c.σ, c.μ
 	sol = __integrate(
-		τ -> abs(τ) == 1.0 ? 0.0 : u(c.decomp(τ))^2 * c.inv_jacobian(τ),
+		τ -> abs(τ) ≈ 1.0 ? 0.0 : σ * abs2( u(σ * c.decomp(τ) + μ) ) * c.inv_jacobian(τ),
 		(-1.0, 1.0);
 		kwargs...
 	)
-	return t -> abs(sol(c.comp(t))), sol(1.0)
+	return t -> abs(sol(c.comp((t - μ) / σ))), sol(1.0)
 end
 
 """

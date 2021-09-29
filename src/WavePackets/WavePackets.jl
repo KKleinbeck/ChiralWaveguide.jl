@@ -1,4 +1,5 @@
 include("./Compressions.jl")
+export Algebraic, Exponential, Trigonometric
 
 include("./Couplings.jl")
 export generateCoupling, modeContribution, modifiedMode

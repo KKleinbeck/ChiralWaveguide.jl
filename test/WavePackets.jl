@@ -9,6 +9,21 @@ using QuadGK
 	@test sum(x -> abs(antiDerX(x) - x^2 / 2), [0.0:0.01:1.0;]) ≤ 1e-12 # global accuracy
 end
 
+@testset "Modes with offset" begin
+	μ, σ = 10.0, 0.1
+
+	# ----------------------------------------
+	# Test normalisation
+	compressions = [Algebraic(σ = σ, μ = μ), Exponential(σ = σ, μ = μ), Trigonometric(σ = σ, μ = μ)]
+	for compression ∈ compressions
+		testMode = Mode(
+			t -> abs(t - μ) < σ/2 ? √(1/σ) : 0.0, compression = compression,
+			abstol = 1e-8, reltol = 1e-10
+		)
+		@test abs(testMode.norm(2μ) - 1.0) < 1e-7
+	end
+end
+
 @testset "Numerical Mode Couplings" begin
 	modes = [
 		GaussMode(),
