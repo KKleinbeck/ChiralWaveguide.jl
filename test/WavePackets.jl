@@ -26,10 +26,12 @@ end
 
 @testset "Numerical Mode Couplings" begin
 	modes = [
+		HardBoxMode(σ = 3.0),    # give a width to help the integrator
+		SoftBoxMode(σ = 3.0),    # A little bit of fine tuning is involved here, but
+		SoftBoxExpMode(σ = 2.5), # I simple want to test the normalisation conditions.
 		GaussMode(),
-		HardBoxMode(σ = 3.0), # since quadgk otherwise doesn't hit a non zero point
-		SoftBoxMode(σ = 3.0), # due to the slow decay
-		SoftBoxExpMode(σ = 2.5)
+		ExpMode(γ =  4.0),
+		ExpMode(γ = -4.0)
 	]
 	# ----------------------------------------
 	# Test Numerical Derivations
@@ -54,10 +56,12 @@ using QuantumOptics
 	# Idea of this test is, that a cavity for a given mode
 	# should have 100% into a cavity for the same mode.
 	modes = [
-		GaussMode(),
 		HardBoxMode(t₀ = -5.0),
 		SoftBoxMode(),
-		SoftBoxExpMode()
+		SoftBoxExpMode(),
+		GaussMode(),
+		ExpMode(γ =  3.5), # Needed to fit in the time window
+		ExpMode(γ = -3.5)
 	]
 
 	for mode ∈ modes
@@ -73,9 +77,11 @@ using QuantumOptics
 		  ψ₀ = fockstate(basis, n) ⊗ fockstate(basis, 0)
 
 		  local ts, ρs
-		  ts, ρs = timeevolution.master_dynamic([-5:0.01:5.0;], ψ₀, (t,ψ) -> (H(t), [L(t)], [L(t)']))
+		  ts, ρs = timeevolution.master_dynamic(
+				[-5:0.01:5.0;], ψ₀, (t,ψ) -> (H(t), [L(t)], [L(t)']), reltol = 1e-7, abstol = 1e-9
+			)
 
-		  @test abs(expect(2, a' * a, ρs[end]) - n) < 1e-7
+		  @test abs(expect(2, a'a, ρs[end]) - n) < 1e-7
 		end
 	end
 end

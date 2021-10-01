@@ -33,16 +33,9 @@ end
 	γd =  0.3
   t₀ = -10.0/(1 - γd)
 
-	mode = Mode(
-		t -> t < 0.0 ? √(1-γd) * exp((1-γd)*t/2) : 0,
-		t -> t < 0.0 ? √(1-γd) * exp((1-γd)*t/2) / √(1 - exp((1-γd)*t)) : 0.0,
-		t -> 0.0,
-		t -> t < 0.0 ? exp((1-γd)*t) : 1.0
-	)
-
   problemA = WaveguideProblem(
 		DissipativeLambdaChain(1, γd = γd),
-    WavePacket(mode, Fock(1)),
+    WavePacket(ExpMode(γ = 1 - γd), Fock(1)),
     (t₀, 0.0)
   )
   solA = ptrace.(solve(problemA, reltol = 1e-10)[2], 1)[end]
@@ -54,7 +47,7 @@ end
 
 	problemB = WaveguideProblem(
 		DissipativeLambdaChain(1, γd = γd),
-		WavePacket(mode, Fock(1)),
+		WavePacket(ExpMode(γ = 1 - γd), Fock(1)),
 		(t₀, 10.0)
 	)
   solB = ptrace.(solve(problemB, reltol = 1e-10)[2], 1)[end]

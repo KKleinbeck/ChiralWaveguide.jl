@@ -42,102 +42,102 @@ Gives the mode unit box function, i.e., the mode takes values
 """
 function HardBoxMode(; t₀ = 0.0, σ = 1.0)
 	function norm(t)
-		x < t₀     && return 0.0
-		x < t₀ + σ && return t / σ
+		t < t₀     && return 0.0
+		t < t₀ + σ && return t / σ
 		return 1.0
 	end
   return Mode(
-    x -> (t₀ < x) && (x < t₀ + σ) ?  1.0 / √(σ)          : 0.0,
-    x -> (t₀ < x) && (x < t₀ + σ) ?  1.0 / √(σ - x + t₀) : 0.0,
-    x -> (t₀ < x) && (x < t₀ + σ) ? -1.0 / √(    x - t₀) : 0.0,
+    t -> (t₀ < t) && (t < t₀ + σ) ?  1.0 / √(σ)          : 0.0,
+    t -> (t₀ < t) && (t < t₀ + σ) ?  1.0 / √(σ - t + t₀) : 0.0,
+    t -> (t₀ < t) && (t < t₀ + σ) ? -1.0 / √(    t - t₀) : 0.0,
 		norm
   )
 end
 
 
 """
-softBox(x, n)
+softBox(t, n)
 
-The UnitBox may be approximated by 1/(x^2n + 1). However, this function is hard
+The UnitBox may be approximated by 1/(t^2n + 1). However, this function is hard
 for exact calculations and a better alternative is (which is returned normalized):
-	1 / sqrt(x^2n + 1)
+	1 / sqrt(t^2n + 1)
 """
-function softBox(x::T; n::Int = 20) where {T<:AbstractFloat}
+function softBox(t; n::Int = 20)
   norm = π * csc(π / 2n) / 2n
-  return (one(T) / √(norm) ) / √( (2x)^(2n) + one(T) )
+  return (1 / √(norm) ) / √( (2t)^(2n) + 1 )
 end
 
 function SoftBoxMode(; τ = 0.0, σ = 1.0, n::Int = 10)
   n̄ = 2n
   norm = π * csc(π / n̄) / n̄
 
-	function softBoxNorm(x)
-		return x * _₂F₁(1, 1/n̄, 1.0 + 1/n̄, -(2x)^n̄) / norm + 1/2
+	function softBoxNorm(t)
+		return t * _₂F₁(1, 1/n̄, 1.0 + 1/n̄, -(2t)^n̄) / norm + 1/2
 	end
 
-  function softBoxCoupling(x)
-    if abs(x) < 0.5
-      return softBox(x, n = n) / √(1.0 - softBoxNorm(x))
+  function softBoxCoupling(t)
+    if abs(t) < 0.5
+      return softBox(t, n = n) / √(1.0 - softBoxNorm(t))
     end
-    Θmx = x < 0.0 ? 1.0 : 0.0
-    twoxⁿ = (2x)^(n̄)
+    Θmt = t < 0.0 ? 1.0 : 0.0
+    twotⁿ = (2t)^(n̄)
 
-    mainTerm = (-x / (1 - n̄)) * _₂F₁(1, 1, 2 - 1/n̄, 1/(1.0 + twoxⁿ) )
+    mainTerm = (-t / (1 - n̄)) * _₂F₁(1, 1, 2 - 1/n̄, 1/(1.0 + twotⁿ) )
 
     return 1.0 / √(
-      mainTerm + norm * (1.0 + twoxⁿ) * Θmx
+      mainTerm + norm * (1.0 + twotⁿ) * Θmt
     )
 	end
 
   return Mode(
-    x ->  softBox( (x - τ) / σ, n = n)  / √(σ),
-    x ->  softBoxCoupling( (x - τ) / σ) / √(σ),
-    x -> -softBoxCoupling(-(x - τ) / σ) / √(σ),
-		x ->  softBoxNorm( (x - τ) / σ) / √(σ)
+    t ->  softBox( (t - τ) / σ, n = n)  / √(σ),
+    t ->  softBoxCoupling( (t - τ) / σ) / √(σ),
+    t -> -softBoxCoupling(-(t - τ) / σ) / √(σ),
+		t ->  softBoxNorm(     (t - τ) / σ) / √(σ)
   )
 end
 
 
 """
-softBoxExp(x, γ)
+softBoxExp(t, γ)
 
 Approximate the UnitBox by a fast decaying and continous function. given by
 
-                       ⌜ 1                     for |x| < 1/2
-    softBoxExp(x, γ) = |
-                       ⌞ exp(-γ(|x| - 1/2))    for |x| > 1/2
+                       ⌜ 1                     for |t| < 1/2
+    softBoxExp(t, γ) = |
+                       ⌞ exp(-γ(|t| - 1/2))    for |t| > 1/2
 """
-function softBoxExp(x; γ = 10.0)
-  x = abs(x)
-  return x > 0.5 ? exp(-γ * (x-1/2)) : one(x)
+function softBoxExp(t; γ = 10.0)
+  t = abs(t)
+  return t > 0.5 ? exp(-γ * (t-1/2)) : 1.0
 end
 
 function SoftBoxExpMode(; τ = 0.0, σ = 1.0, γ = 10.0)
-  function softBoxExpNorm(x)
-    if x < -0.5
-      return exp(2γ * (x + 1/2)) / 2γ
-    elseif x < 0.5
-      return 1/(2γ) + x + 1/2
+  function softBoxExpNorm(t)
+    if t < -0.5
+      return exp(2γ * (t + 1/2)) / 2γ
+    elseif t < 0.5
+      return 1/(2γ) + t + 1/2
     end
 
-    return 1/γ + 1.0 - exp(-2γ * (x - 1/2)) / 2γ
+    return 1/γ + 1.0 - exp(-2γ * (t - 1/2)) / 2γ
 	end
 
-  function softBoxExpCoupling(x)
-    if x < -0.5
-      return exp(γ * (x+1/2)) / √(1 + (1/γ) - exp(2γ * (x+1/2))/(2γ))
-    elseif x < 0.5
-      return 1/√(1/2 + 1/(2γ) - x)
+  function softBoxExpCoupling(t)
+    if t < -0.5
+      return exp(γ * (t+1/2)) / √(1 + (1/γ) - exp(2γ * (t+1/2))/(2γ))
+    elseif t < 0.5
+      return 1/√(1/2 + 1/(2γ) - t)
     end
 
     return √(2γ)
   end
 
   return Mode(
-    x ->  √(γ / (γ * σ + σ)) * softBoxExp( (x - τ) / σ, γ = γ),
-    x ->  softBoxExpCoupling( (x - τ) / σ) / √(σ),
-    x -> -softBoxExpCoupling(-(x - τ) / σ) / √(σ),
-		x ->  √(γ / (γ * σ + σ)) * softBoxExpNorm( (x - τ) / σ)
+    t ->  √(γ / (γ * σ + σ)) * softBoxExp( (t - τ) / σ, γ = γ),
+    t ->  softBoxExpCoupling( (t - τ) / σ) / √(σ),
+    t -> -softBoxExpCoupling(-(t - τ) / σ) / √(σ),
+		t ->  √(γ / (γ * σ + σ)) * softBoxExpNorm( (t - τ) / σ)
   )
 end
 
@@ -149,11 +149,37 @@ end
 """
 function GaussMode(; τ = 0.0, σ = 1.0)
   return Mode(
-    x ->  exp(-(x - τ)^2 / (2 * σ^2) ) / √( σ * √(π)),
-    x ->  exp(-(x - τ)^2 / (2 * σ^2) ) / √((σ * √(π)) * erfc( (x - τ) / σ) / 2 + eps(0.0)),
-    x -> -exp(-(x - τ)^2 / (2 * σ^2) ) / √((σ * √(π)) * erfc(-(x - τ) / σ) / 2 + eps(0.0)),
-		x ->  (1 + erf( (x - τ) / σ)) / 2.0
+    t ->  exp(-(t - τ)^2 / (2 * σ^2) ) / √( σ * √(π)),
+    t ->  exp(-(t - τ)^2 / (2 * σ^2) ) / √((σ * √(π)) * erfc( (t - τ) / σ) / 2 + eps(0.0)),
+    t -> -exp(-(t - τ)^2 / (2 * σ^2) ) / √((σ * √(π)) * erfc(-(t - τ) / σ) / 2 + eps(0.0)),
+		t ->  (1 + erf( (t - τ) / σ)) / 2.0
   )
+end
+
+
+"""
+  ExpMode(t₀, γ)
+
+  Exponentially raises up to time t₀ or decays after t₀, depending on the sign of the rate γ.
+	Amplitude uses rate γ/2, so that the probability density uses γ.
+"""
+function ExpMode(; t₀ = 0.0, γ = 1.0)
+	@assert γ != 0.0
+
+	if γ < 0.0
+		return Mode(
+			t -> t > t₀ ?  √(-γ) * exp(γ*(t-t₀)/2) : 0,
+			t -> t > t₀ ?  √(-γ) : 0.0,
+			t -> t > t₀ ? -√(-γ) * exp(γ*(t-t₀)/2) / √( 1.0 - exp(γ*(t-t₀)) ) : 0.0,
+			t -> t > t₀ ? 1.0 - exp(γ*(t-t₀)) : 0.0
+		)
+	end
+	Mode(
+		t -> t < t₀ ?  √(γ) * exp(γ*(t-t₀)/2) : 0,
+		t -> t < t₀ ?  √(γ) * exp(γ*(t-t₀)/2) / √( 1.0 - exp(γ*(t-t₀)) ) : 0.0,
+		t -> t < t₀ ? -√(γ) : 0.0,
+		t -> t < t₀ ? exp(γ*(t-t₀)) : 1.0
+	)
 end
 
 
@@ -164,9 +190,9 @@ Constant wave, without any couplings. `tf` gives the final time, i.e., a cutoff.
 """
 function FlatMode(; tf = Inf)
   return Mode(
-    x -> x < tf ? 1.0 : 0.0,
-    x -> begin @warn("`flatMode` doesn't define gₒ"); NaN end,
-    x -> begin @warn("`flatMode` doesn't define gᵢ"); NaN end,
-		x -> begin @warn("`flatMode` doesn't define a norm"); NaN end
+    t -> t < tf ? 1.0 : 0.0,
+    t -> begin @warn("`flatMode` doesn't define gₒ"); NaN end,
+    t -> begin @warn("`flatMode` doesn't define gᵢ"); NaN end,
+		t -> begin @warn("`flatMode` doesn't define a norm"); NaN end
   )
 end
