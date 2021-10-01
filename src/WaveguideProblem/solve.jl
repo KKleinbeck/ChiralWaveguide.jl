@@ -12,11 +12,7 @@ Returns:
 """
 function solve(problem::WaveguideProblem; Nouts::Union{Nothing,Array} = nothing, kwargs...)
 	if problem isa _ScatterProblem
-		if isnothing(Nouts)
-			N = problem.ψᵢ.state.N_cutoff
-			problem.ψᵢ.state isa Displaced && ( N += coherent_cutoff(problem.ψᵢ.state.α) )
-			Nouts = fill(N, length(problem.ψₒ))
-		end
+		isnothing(Nouts) && ( Nouts = _expectedOutputPhotons(problem) )
 		@assert length(Nouts) == length(problem.ψₒ)
 	end
 
@@ -31,10 +27,38 @@ function solve(problem::WaveguideProblem; Nouts::Union{Nothing,Array} = nothing,
 end
 
 
+function _expectedOutputPhotons(problem::_ScatterProblem{O, Coherent, ContinuousWave}) where {O}
+	fill(coherent_cutoff( (problem.ts[end] - problem.ts[1]) * abs2(problem.ψᵢ.α) ),
+		length(problem.ψₒ)
+	)
+	# For each mode, perform the integration to estimate the expectated number of photons
+end
+function _expectedOutputPhotons(problem::_ScatterProblem{O, S, WavePacket{S}}) where {O, S <: Displaced}
+	N = problem.ψᵢ.state.N_cutoff + coherent_cutoff(problem.ψᵢ.state.α)
+	fill(N, length(problem.ψₒ))
+end
+function _expectedOutputPhotons(problem::_ScatterProblem{O, S, WavePacket{S}}) where {O, S}
+	N = problem.ψᵢ.state.N_cutoff
+	fill(N, length(problem.ψₒ))
+end
+
+
 # ------------------------------------------------------------
 # _DrivenProblems
 
-function _generateLindbladian(problem::_DrivenProblem{O, Coherent}, Nouts) where {O}
+function _generateLindbladian(problem::_DrivenProblem{O, Coherent, ContinuousWave}, Nouts) where {O}
+	_generateLindbladian(
+		WaveguideProblem(
+			[problem.H, problem.Ls, problem.σ, problem.system_state],
+			WavePacket(FlatMode(), Coherent(problem.ψᵢ.α)),
+			problem.ts
+		),
+		Nouts
+	)
+end
+
+
+function _generateLindbladian(problem::_DrivenProblem{O, Coherent, WavePacket{Coherent}}, Nouts) where {O}
 	# ----------------------------------------
 	# Scatter System
 	H_sys, σ⁻, σ⁺ = problem.H, problem.σ, problem.σ'
@@ -55,7 +79,7 @@ function _generateLindbladian(problem::_DrivenProblem{O, Coherent}, Nouts) where
 end
 
 
-function _generateLindbladian(problem::_DrivenProblem{O, T}, Nouts) where {O, T}
+function _generateLindbladian(problem::_DrivenProblem{O, T, WavePacket{T}}, Nouts) where {O, T}
 	# ----------------------------------------
 	# Scatter System
 	H_sys, σ⁻, σ⁺ = problem.H, problem.σ, problem.σ'
@@ -91,8 +115,8 @@ function _generateLindbladian(problem::_DrivenProblem{O, T}, Nouts) where {O, T}
 end
 
 
-function _createHamiltonian(problem::_DrivenProblem{O, <: Displaced},
-		atomic_dissipation, aᵢᵀaᵢ, aᵢσ⁺, σ⁺, σ⁻, H_sys) where {O}
+function _createHamiltonian(problem::_DrivenProblem{O, S, WavePacket{S}},
+		atomic_dissipation, aᵢᵀaᵢ, aᵢσ⁺, σ⁺, σ⁻, H_sys) where {O, S <: Displaced}
 	gᵢ, mf, α = problem.ψᵢ.mode.gᵢ, problem.ψᵢ.mode.modeFunction, problem.ψᵢ.state.α
 
 	return t -> atomic_dissipation - 0.5im * gᵢ(t)^2 * aᵢᵀaᵢ -
@@ -100,8 +124,8 @@ function _createHamiltonian(problem::_DrivenProblem{O, <: Displaced},
 end
 
 
-function _createHamiltonian(problem::_DrivenProblem{O, <: NonDisplaced},
-		atomic_dissipation, aᵢᵀaᵢ, aᵢσ⁺, σ⁺, σ⁻, H_sys) where {O}
+function _createHamiltonian(problem::_DrivenProblem{O, S, WavePacket{S}},
+		atomic_dissipation, aᵢᵀaᵢ, aᵢσ⁺, σ⁺, σ⁻, H_sys) where {O, S <: NonDisplaced}
 	gᵢ = problem.ψᵢ.mode.gᵢ
 
 	return t -> atomic_dissipation - 0.5im * gᵢ(t)^2 * aᵢᵀaᵢ - 1.0im * gᵢ(t)aᵢσ⁺ + H_sys
@@ -111,7 +135,19 @@ end
 # ------------------------------------------------------------
 # _ScatterProblems
 
-function _generateLindbladian(problem::_ScatterProblem{O, Coherent}, Nouts) where {O}
+function _generateLindbladian(problem::_ScatterProblem{O, Coherent, ContinuousWave}, Nouts) where {O}
+	_generateLindbladian(
+		WaveguideProblem(
+			[problem.H, problem.Ls, problem.σ, problem.system_state],
+			WavePacket(FlatMode(), Coherent(problem.ψᵢ.α)),
+			problem.ψₒ,
+			problem.ts
+		),
+		Nouts
+	)
+end
+
+function _generateLindbladian(problem::_ScatterProblem{O, Coherent, WavePacket{Coherent}}, Nouts) where {O}
 	# ----------------------------------------
 	# Output System
 	outBasis, groundstateOutput, aₒs, aₒᵀs = _generateOutputCavities(Nouts)
@@ -160,7 +196,7 @@ function _generateLindbladian(problem::_ScatterProblem{O, Coherent}, Nouts) wher
 end
 
 
-function _generateLindbladian(problem::_ScatterProblem{O, T}, Nouts) where {O, T}
+function _generateLindbladian(problem::_ScatterProblem{O, T, WavePacket{T}}, Nouts) where {O, T}
 	# ----------------------------------------
 	# Output System
 	outBasis, groundstateOutput, aₒs, aₒᵀs = _generateOutputCavities(Nouts)
@@ -227,8 +263,9 @@ function _generateOutputCavities(Nouts)
 end
 
 
-function _createHamiltonian(problem::_ScatterProblem{O, <: Displaced},
-		atomic_dissipation, aₒᵀaₒs, aᵢᵀaᵢ, aᵢσ⁺, aₒᵀaᵢs, aₒᵀσ⁻s, σ⁺, σ⁻, gₒaₒᵀs, gₒaₒs, H_sys) where {O}
+function _createHamiltonian(problem::_ScatterProblem{O, S, WavePacket{S}},
+		atomic_dissipation, aₒᵀaₒs, aᵢᵀaᵢ, aᵢσ⁺, aₒᵀaᵢs, aₒᵀσ⁻s, σ⁺, σ⁻, gₒaₒᵀs, gₒaₒs,
+		H_sys) where {O, S<: Displaced}
 	gᵢ, mf, α = problem.ψᵢ.mode.gᵢ, problem.ψᵢ.mode.modeFunction, problem.ψᵢ.state.α
 	gₒs   = [mode.gₒ for mode in problem.ψₒ]
 
@@ -240,8 +277,9 @@ function _createHamiltonian(problem::_ScatterProblem{O, <: Displaced},
 end
 
 
-function _createHamiltonian(problem::_ScatterProblem{O, <: NonDisplaced},
-		atomic_dissipation, aₒᵀaₒs, aᵢᵀaᵢ, aᵢσ⁺, aₒᵀaᵢs, aₒᵀσ⁻s, σ⁺, σ⁻, gₒaₒᵀs, gₒaₒs, H_sys) where {O}
+function _createHamiltonian(problem::_ScatterProblem{O, S, WavePacket{S}},
+		atomic_dissipation, aₒᵀaₒs, aᵢᵀaᵢ, aᵢσ⁺, aₒᵀaᵢs, aₒᵀσ⁻s, σ⁺, σ⁻, gₒaₒᵀs, gₒaₒs,
+		H_sys) where {O, S<: NonDisplaced}
 	gᵢ    = problem.ψᵢ.mode.gᵢ
 	gₒs   = [mode.gₒ for mode in problem.ψₒ]
 

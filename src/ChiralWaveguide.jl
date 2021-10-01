@@ -5,7 +5,7 @@ using Reexport
 @reexport using QuantumOptics
 
 include("WavePackets/WavePackets.jl")
-export WavePacket
+export WavePacket, ContinuousWave, NoPacket
 
 include("WaveguideProblem/WaveguideProblem.jl")
 export WaveguideProblem

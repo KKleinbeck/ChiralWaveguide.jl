@@ -145,18 +145,18 @@ end
   σ_WW_i = transition(NLevelBasis(2), 2, 2)
 
   problem1 = WaveguideProblem(
-    TwoLevelChain(1, Γ = Γ), WavePacket(FlatMode(), Coherent(1.0)), 3.0
+    TwoLevelChain(1, Γ = Γ), ContinuousWave(1.0), 3.0
   )
   sol1 = solve(problem1, reltol = 1e-10)[2]
 
   problem2 = WaveguideProblem(
-    TwoLevelChain(2, Γ = Γ), WavePacket(FlatMode(), Coherent(1.0)), 3.0
+    TwoLevelChain(2, Γ = Γ), ContinuousWave(1.0), 3.0
   )
   sol2 = solve(problem2, reltol = 1e-10)[2]
 	sol21, sol22 = ptrace.(sol2, 2), ptrace.(sol2, 1)
 
   problem3 = WaveguideProblem(
-    TwoLevelChain(3, Γ = Γ), WavePacket(FlatMode(), Coherent(1.0)), 3.0
+    TwoLevelChain(3, Γ = Γ), ContinuousWave(1.0), 3.0
   )
   sol3 = solve(problem3, reltol = 1e-10)[2]
 	sol31, sol32 = [ptrace(sol, [2, 3]) for sol ∈ sol3], [ptrace(sol, [1, 3]) for sol ∈ sol3]
@@ -173,18 +173,18 @@ end
   σ_WW_i = transition(NLevelBasis(3), 2, 2)
 
   problem1 = WaveguideProblem(
-    DissipativeLambdaChain(1, γd = γd, Γ = Γ), WavePacket(FlatMode(), Coherent(1.0)), 3.0
+    DissipativeLambdaChain(1, γd = γd, Γ = Γ), ContinuousWave(1.0), 3.0
   )
   sol1 = solve(problem1, reltol = 1e-10)[2]
 
   problem2 = WaveguideProblem(
-    DissipativeLambdaChain(2, γd = γd, Γ = Γ), WavePacket(FlatMode(), Coherent(1.0)), 3.0
+    DissipativeLambdaChain(2, γd = γd, Γ = Γ), ContinuousWave(1.0), 3.0
   )
   sol2 = solve(problem2, reltol = 1e-10)[2]
 	sol21, sol22 = ptrace.(sol2, 2), ptrace.(sol2, 1)
 
   problem3 = WaveguideProblem(
-    DissipativeLambdaChain(3, γd = γd, Γ = Γ), WavePacket(FlatMode(), Coherent(1.0)), 3.0
+    DissipativeLambdaChain(3, γd = γd, Γ = Γ), ContinuousWave(1.0), 3.0
   )
   sol3 = solve(problem3, reltol = 1e-10)[2]
 	sol31, sol32 = [ptrace(sol, [2, 3]) for sol ∈ sol3], [ptrace(sol, [1, 3]) for sol ∈ sol3]
@@ -235,7 +235,7 @@ end
 		transition(NLevelBasis(2), 1, 2)
 	αs = range(0.2, 2.0, length = 19)
 	for αi ∈ αs
-		problem = WaveguideProblem(TwoLevelChain(1), WavePacket(FlatMode(), Coherent(αi)), 20.0)
+		problem = WaveguideProblem(TwoLevelChain(1), ContinuousWave(αi), 20.0)
 		ts, sol = solve(problem, reltol = 1e-10)
 
 		ρAtomsExact = exactDynamics.(ts, 1.0, αi, transform = true)

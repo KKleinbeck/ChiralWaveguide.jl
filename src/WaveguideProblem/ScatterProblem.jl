@@ -1,16 +1,21 @@
-mutable struct _ScatterProblem{O, S <: WavePacketState} <: WaveguideProblem
+mutable struct _ScatterProblem{O, S <: WavePacketState, WP <: _WavePacket{S}} <: WaveguideProblem
 	H::O
 	Ls::Array{O}
 	σ::O
 	system_state
 
-	ψᵢ::WavePacket{S}
+	ψᵢ::WP
 	ψₒ::Array{Mode}
 
 	ts::StepRangeLen
 end
 
-function WaveguideProblem(sys, ψᵢ::WavePacket, ψₒ, ts)
+
+function WaveguideProblem(sys, ψₒ, ts)
+	WaveguideProblem(sys, NoPacket(), ψₒ, ts)
+end
+
+function WaveguideProblem(sys, ψᵢ::_WavePacket, ψₒ, ts)
 	ts isa StepRangeLen || (ts = _toRange(ts))
 
 	ψₒ = ψₒ isa Mode ? [ψₒ] : ψₒ

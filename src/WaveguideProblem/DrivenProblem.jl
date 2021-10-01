@@ -1,15 +1,20 @@
-mutable struct _DrivenProblem{O, S <: WavePacketState} <: WaveguideProblem
+mutable struct _DrivenProblem{O, S <: WavePacketState, WP <: _WavePacket{S}} <: WaveguideProblem
 	H::O
 	Ls::Array{O}
 	σ::O
 	system_state
 
-	ψᵢ::WavePacket{S}
+	ψᵢ::WP
 
 	ts::StepRangeLen
 end
 
-function WaveguideProblem(sys, ψᵢ::WavePacket, ts)
+
+function WaveguideProblem(sys, ts)
+	WaveguideProblem(sys, NoPacket(), ts)
+end
+
+function WaveguideProblem(sys, ψᵢ::_WavePacket, ts)
 	ts isa StepRangeLen || (ts = _toRange(ts))
 
 	length(sys) == 3 && return _DrivenProblem(sys[1], typeof(sys[1])[], sys[2], sys[3], ψᵢ, ts)
