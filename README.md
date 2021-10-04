@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/KKleinbeck/ChiralWaveguide.jl/branch/master/graph/badge.svg?token=YTB8XK86JG)](https://codecov.io/gh/KKleinbeck/ChiralWaveguide.jl)
 
 *ChiralWaveguide.jl* is a package for the simulation of arbitrary quantum systems that are coupled
-to one-dimensional bosons with chiral propagation --- in other words, a waveguide-like system.
+to one-dimensional bosons with chiral propagation &mdash; in other words, a waveguide-like system.
 The package is build around [QuantumOptics.jl], the syntax is inspired by the [SciML]
 ecosystem and the theory is from [A. Kiilerich, K. Mølmer].
 
