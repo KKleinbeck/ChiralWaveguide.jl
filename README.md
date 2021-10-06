@@ -1,3 +1,5 @@
+<img src="Logo.png" alt="Logo" width="279"/>
+
 # ChiralWaveguide.jl
 
 [![Build Status](https://github.com/KKleinbeck/ChiralWaveguide.jl/workflows/CI/badge.svg)](https://github.com/KKleinbeck/ChiralWaveguide.jl/actions)
