@@ -181,18 +181,3 @@ function ExpMode(; t₀ = 0.0, γ = 1.0)
 		t -> t < t₀ ? exp(γ*(t-t₀)) : 1.0
 	)
 end
-
-
-"""
-FlatMode(tf)
-
-Constant wave, without any couplings. `tf` gives the final time, i.e., a cutoff.
-"""
-function FlatMode(; tf = Inf)
-  return Mode(
-    t -> t < tf ? 1.0 : 0.0,
-    t -> begin @warn("`flatMode` doesn't define gₒ"); NaN end,
-    t -> begin @warn("`flatMode` doesn't define gᵢ"); NaN end,
-		t -> begin @warn("`flatMode` doesn't define a norm"); NaN end
-  )
-end

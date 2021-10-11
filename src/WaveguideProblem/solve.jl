@@ -10,6 +10,12 @@ Returns:
 - ρ(t):  The density matrix at each point in time. The Hilbert space depends on the
          parameters given, if unsure about the result check out `ρ.basis_l`
 """
+function solve(problem::_DrivenProblem{O, Coherent, ContinuousWave}; kwargs...) where {O}
+	ψ₀, Ls, H_nh = _generateLindbladian(problem)
+
+	return timeevolution.master_nh(problem.ts, ψ₀, H_nh, Ls; kwargs...)
+end
+
 function solve(problem::WaveguideProblem; Nouts::Union{Nothing,Array} = nothing, kwargs...)
 	if problem isa _ScatterProblem
 		isnothing(Nouts) && ( Nouts = _expectedOutputPhotons(problem) )
@@ -31,12 +37,13 @@ function _expectedOutputPhotons(problem::_ScatterProblem{O, Coherent, Continuous
 	fill(coherent_cutoff( (problem.ts[end] - problem.ts[1]) * abs2(problem.ψᵢ.α) ),
 		length(problem.ψₒ)
 	)
-	# For each mode, perform the integration to estimate the expectated number of photons
 end
+
 function _expectedOutputPhotons(problem::_ScatterProblem{O, S, WavePacket{S}}) where {O, S <: Displaced}
 	N = problem.ψᵢ.state.N_cutoff + coherent_cutoff(problem.ψᵢ.state.α)
 	fill(N, length(problem.ψₒ))
 end
+
 function _expectedOutputPhotons(problem::_ScatterProblem{O, S, WavePacket{S}}) where {O, S}
 	N = problem.ψᵢ.state.N_cutoff
 	fill(N, length(problem.ψₒ))
@@ -46,19 +53,27 @@ end
 # ------------------------------------------------------------
 # _DrivenProblems
 
-function _generateLindbladian(problem::_DrivenProblem{O, Coherent, ContinuousWave}, Nouts) where {O}
-	_generateLindbladian(
-		WaveguideProblem(
-			[problem.H, problem.Ls, problem.σ, problem.system_state],
-			WavePacket(FlatMode(), Coherent(problem.ψᵢ.α)),
-			problem.ts
-		),
-		Nouts
-	)
+function _generateLindbladian(problem::_DrivenProblem{O, Coherent, ContinuousWave}) where {O}
+	# ----------------------------------------
+	# Scatter System
+	H_sys, σ⁻, σ⁺ = problem.H, problem.σ, problem.σ'
+	σ⁺σ⁻ = σ⁺ * σ⁻
+
+	# ----------------------------------------
+	# Constructing Disspator and Hamiltonian
+	α  = problem.ψᵢ.α
+	atomic_dissipation = isempty(problem.Ls) ?
+		-0.5im * σ⁺σ⁻ :
+		-0.5im * σ⁺σ⁻ - 0.5im * sum([L'*L for L ∈ problem.Ls])
+
+	H_nh = atomic_dissipation - 1.0im * (σ⁺ * α - σ⁻ * α) + H_sys
+
+	ψ₀ = problem.system_state
+	return ψ₀, [σ⁻, problem.Ls...], H_nh
 end
 
 
-function _generateLindbladian(problem::_DrivenProblem{O, Coherent, WavePacket{Coherent}}, Nouts) where {O}
+function _generateLindbladian(problem::_DrivenProblem{O, Coherent, WavePacket{Coherent}}, _) where {O}
 	# ----------------------------------------
 	# Scatter System
 	H_sys, σ⁻, σ⁺ = problem.H, problem.σ, problem.σ'
@@ -79,7 +94,7 @@ function _generateLindbladian(problem::_DrivenProblem{O, Coherent, WavePacket{Co
 end
 
 
-function _generateLindbladian(problem::_DrivenProblem{O, T, WavePacket{T}}, Nouts) where {O, T}
+function _generateLindbladian(problem::_DrivenProblem{O, T, WavePacket{T}}, _) where {O, T}
 	# ----------------------------------------
 	# Scatter System
 	H_sys, σ⁻, σ⁺ = problem.H, problem.σ, problem.σ'
@@ -139,7 +154,7 @@ function _generateLindbladian(problem::_ScatterProblem{O, Coherent, ContinuousWa
 	_generateLindbladian(
 		WaveguideProblem(
 			[problem.H, problem.Ls, problem.σ, problem.system_state],
-			WavePacket(FlatMode(), Coherent(problem.ψᵢ.α)),
+			ContinuousWave(t -> problem.ψᵢ.α),
 			problem.ψₒ,
 			problem.ts
 		),

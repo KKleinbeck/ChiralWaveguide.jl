@@ -32,6 +32,38 @@ end
   @test sum(tracedistance.(solA, solB)) ≈ 0
 end
 
+@testset "DrivenProblem - ContinuousWave" begin
+	# ----------------------------------------
+	# ScatterProblem - empty Dissipator
+  testBasis = SpinBasis(1//2)
+  σm, σp = sigmam(testBasis), sigmap(testBasis)
+
+  problemA = WaveguideProblem((σm+σp, σm, spindown(testBasis)), ContinuousWave(     1.0), 1.)
+  solA     = solve(problemA)[2]
+
+  problemB = WaveguideProblem((σm+σp, σm, spindown(testBasis)), ContinuousWave(t -> 1.0), 1.)
+  solB     = solve(problemB)[2]
+
+  @test sum(tracedistance.(solA, solB)) ≈ 0
+end
+
+@testset "ScatterProblem - ContinuousWave" begin
+	# ----------------------------------------
+	# ScatterProblem - empty Dissipator
+  testBasis = SpinBasis(1//2)
+  σm, σp = sigmam(testBasis), sigmap(testBasis)
+
+	mode = SoftBoxMode()
+
+  problemA = WaveguideProblem((σm+σp, σm, spindown(testBasis)), ContinuousWave(     1.0), mode, 1.)
+  solA     = solve(problemA)[2]
+
+  problemB = WaveguideProblem((σm+σp, σm, spindown(testBasis)), ContinuousWave(t -> 1.0), mode, 1.)
+  solB     = solve(problemB)[2]
+
+  @test sum(tracedistance.(solA, solB)) ≈ 0
+end
+
 @testset "Chirality of ScatterProblem" begin
 	# ----------------------------------------
 	# DrivenProblem - empty Dissipator
