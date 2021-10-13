@@ -4,7 +4,7 @@
 
 [![Build Status](https://github.com/KKleinbeck/ChiralWaveguide.jl/workflows/CI/badge.svg)](https://github.com/KKleinbeck/ChiralWaveguide.jl/actions)
 [![codecov](https://codecov.io/gh/KKleinbeck/ChiralWaveguide.jl/branch/master/graph/badge.svg?token=YTB8XK86JG)](https://codecov.io/gh/KKleinbeck/ChiralWaveguide.jl)
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://KKleinbeck.github.io/ChiralWaveguide.jl/stable)
+<!-- [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://KKleinbeck.github.io/ChiralWaveguide.jl/stable) -->
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://KKleinbeck.github.io/ChiralWaveguide.jl/dev)
 
 *ChiralWaveguide.jl* is a package for the simulation of arbitrary quantum systems that are coupled
