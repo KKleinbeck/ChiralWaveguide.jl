@@ -14,6 +14,12 @@ export WavePacketState, Displaced, NonDisplaced,
 
 abstract type _WavePacket{T <: WavePacketState} end
 
+"""
+    WavePacket(mode::Mode, state::WavePacketState)
+
+Describes the _input_ wave packet.
+A `WavePacket` consists of any [`Mode`](@ref) and any [`WavePacketState`](@ref).
+"""
 mutable struct WavePacket{S} <: _WavePacket{S}
   mode::Mode
   state::S

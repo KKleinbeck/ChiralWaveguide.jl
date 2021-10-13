@@ -1,14 +1,18 @@
 """
-solve(problem::WaveguideProblem, args...; [Nouts], kwargs...)
+    solve(problem::WaveguideProblem; [Nouts], kwargs...)
 
-Solve the `WaveguideProblem`. Additional arguments are passed to the time-dependant master equation
-solver from the `QuantumOptics` package.
-If there are output modes, then `NOuts` may specify the dimension of the respective Fockspaces.
+Solves the `WaveguideProblem`, using `QuantumOptics.timeevolution.master_nh[_dynamic]`.
 
-Returns:
+# Arguments
+- `problem`: the waveguide problem
+- `Nouts::Array{Int}` (optional): specifies the dimension of the output Fock spaces
+- Additional keyword arguments are passed to `QuantumOptics.jl`'s master equation solver,
+  see [it's documentation](https://docs.qojulia.org/api/#QuantumOptics.timeevolution.master)
+
+# Returns
 - ts:    The times on which the output is determined.
-- ρ(t):  The density matrix at each point in time. The Hilbert space depends on the
-         parameters given, if unsure about the result check out `ρ.basis_l`
+- ρ(t):  The density matrix at each point in time. The Hilbert space depends on the specific
+         problem; if unsure check out `ρ[1].basis_l`.
 """
 function solve(problem::_DrivenProblem{O, Coherent, ContinuousWave}; kwargs...) where {O}
 	ψ₀, Ls, H_nh = _generateLindbladian(problem)

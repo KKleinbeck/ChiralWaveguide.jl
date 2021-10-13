@@ -1,6 +1,8 @@
 /Manifest.toml
 /todo.txt
 
+docs/build/
+
 .DS_Store
 
 Logo.afdesign

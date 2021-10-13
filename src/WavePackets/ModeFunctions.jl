@@ -1,21 +1,23 @@
 using SpecialFunctions, HypergeometricFunctions
 
 """
-Mode
+    Mode(modeFunction; compression = :algebraic, kwargs...)
+    Mode(modeFunction, gᵢ, gₒ, norm)
 
-Container for a cavity mode. Consists of:
+Container for a cavity mode.
+
+# Arguments
 - `modeFunction`: the wave function of the mode
 - `gᵢ`: coupling function for an input cavity
 - `gₒ`: coupling function for an output cavity
 - `norm`: square integral of the mode up to time t
 
-If only the mode function is provided, then all other
-quantities are numerically determined. This is done by
-first mapping ℝ → (-1, 1) and then numerically solving
-the resulting integrals. For the map ℝ → (-1, 1) the
-compressions may be picked by using
-`Mode(modeFunction, compression::Union{Symbol, Compression})`.
-Allowed Symbols are the keys of the `Compressions` dictionary.
+If only the mode function is provided, then all other quantities are numerically determined.
+This is done by mapping ``ℝ → (-1, 1)`` and then numerically solving the resulting integrals.
+The argument `compression` picks the map ``ℝ → (-1, 1)`` and can be a [`Compression`](@ref) or
+the respective symbol.
+Allowed symbols are the keys of the `ChiralWaveguide.Compressions` dictionary.
+Additional keyword arguments will be passed to the numerical integrator.
 """
 mutable struct Mode
 	modeFunction::Function
@@ -34,11 +36,10 @@ end
 
 
 """
-HardBoxMode(; t₀, σ)
+    HardBoxMode(; t₀ = 0.0, σ = 1.0)
 
-Gives the mode unit box function, i.e., the mode takes values
-	1 / √(σ)   for t₀ < t < t₀ + σ
-	0          otherwise
+The mode is a box function, i.e., the mode takes the value ``1 / \\sqrt{σ}`` for ``t₀ < t < t₀ + σ``
+and 0 otherwise.
 """
 function HardBoxMode(; t₀ = 0.0, σ = 1.0)
 	function norm(t)
@@ -55,21 +56,22 @@ function HardBoxMode(; t₀ = 0.0, σ = 1.0)
 end
 
 
-"""
-softBox(t, n)
 
-The UnitBox may be approximated by 1/(t^2n + 1). However, this function is hard
-for exact calculations and a better alternative is (which is returned normalized):
-	1 / sqrt(t^2n + 1)
 """
-function softBox(t; n::Int = 20)
-  norm = π * csc(π / 2n) / 2n
-  return (1 / √(norm) ) / √( (2t)^(2n) + 1 )
-end
+    SoftBoxMode(; τ = 0.0, σ = 1.0, n::Int = 10)
 
+The mode is an approximation to the box mode,
+``\\mathrm{box}(t) ≈ \\frac{1}{\\sqrt{(2t)^{2n} + 1}}``.
+The parameters `τ` and `σ` control the center and width respectively, `n` the exponent.
+"""
 function SoftBoxMode(; τ = 0.0, σ = 1.0, n::Int = 10)
   n̄ = 2n
   norm = π * csc(π / n̄) / n̄
+
+	function softBox(t; n::Int = 20)
+	  norm = π * csc(π / 2n) / 2n
+	  return (1 / √(norm) ) / √( (2t)^(2n) + 1 )
+	end
 
 	function softBoxNorm(t)
 		return t * _₂F₁(1, 1/n̄, 1.0 + 1/n̄, -(2t)^n̄) / norm + 1/2
@@ -99,20 +101,22 @@ end
 
 
 """
-softBoxExp(t, γ)
+    SoftBoxExpMode(; τ = 0.0, σ = 1.0, γ = 10.0)
 
-Approximate the UnitBox by a fast decaying and continous function. given by
+A box mode with exponential decaying flanks, given by
 
                        ⌜ 1                     for |t| < 1/2
     softBoxExp(t, γ) = |
                        ⌞ exp(-γ(|t| - 1/2))    for |t| > 1/2
-"""
-function softBoxExp(t; γ = 10.0)
-  t = abs(t)
-  return t > 0.5 ? exp(-γ * (t-1/2)) : 1.0
-end
 
+The parameters `τ` and `σ` control the center and width respectively, `γ` the deay rate.
+"""
 function SoftBoxExpMode(; τ = 0.0, σ = 1.0, γ = 10.0)
+	function softBoxExp(t; γ = 10.0)
+	  t = abs(t)
+	  return t > 0.5 ? exp(-γ * (t-1/2)) : 1.0
+	end
+
   function softBoxExpNorm(t)
     if t < -0.5
       return exp(2γ * (t + 1/2)) / 2γ
@@ -143,9 +147,9 @@ end
 
 
 """
-  GaussMode(τ, σ)
+    GaussMode(; τ = 0.0, σ = 1.0)
 
-  Numerical stable mode function & couplings of Gaussian wave packet with mean τ and variance σ.
+Numerical stable mode function & couplings of Gaussian wave packet with mean τ and variance σ.
 """
 function GaussMode(; τ = 0.0, σ = 1.0)
   return Mode(
@@ -158,10 +162,10 @@ end
 
 
 """
-  ExpMode(t₀, γ)
+    ExpMode(; t₀ = 0.0, γ = 1.0)
 
-  Exponentially raises up to time t₀ or decays after t₀, depending on the sign of the rate γ.
-	Amplitude uses rate γ/2, so that the probability density uses γ.
+Exponentially raises up to time t₀ or decays after t₀, depending on the sign of the rate γ.
+Amplitude decays with rate γ/2, so that the probability density decays with γ.
 """
 function ExpMode(; t₀ = 0.0, γ = 1.0)
 	@assert γ != 0.0

@@ -1,10 +1,21 @@
+"""
+    WavePacketState
+
+Abstract base class for all states.
+"""
 abstract type WavePacketState end
 
+"""
+    Coherent(α[, N_cutoff])
+
+Describes a coherent state ``|α⟩``. The autmatic choice for `N_cutoff`
+yields a normalisation of above 0.999 for α ∈ [0,10].
+"""
 struct Coherent <: WavePacketState
 	α::Complex{Float64}
 	N_cutoff::Int
 end
-# magic numbers choosen so that for α ∈ [0,10] the normalisation of the state is above 0.999
+
 coherent_cutoff(α)::Int = ceil(Int, abs(α) * (abs(α) + 3.5) + 0.45 * √(abs(α)))
 Coherent(α)                    = Coherent(Complex{Float64}(α), coherent_cutoff(α))
 Coherent(α::Float64, N_cutoff) = Coherent(Complex{Float64}(α), N_cutoff)
@@ -15,18 +26,34 @@ abstract type NonDisplaced <: WavePacketState end
 #-------------------------------------------------------
 # NonDisplaced States
 
+"""
+    ArbitraryState(amplitudes[, N_cutoff])
+
+Creates a state with specific amplitudes.
+"""
 struct ArbitraryState <: NonDisplaced
-	data::Array{Complex{Float64}, 1}
+	amplitudes::Array{Complex{Float64}, 1}
 	N_cutoff::Int
 end
-ArbitraryState(data::Array{Complex{Float64}, 1}) = ArbitraryState(data, length(data) - 1)
+ArbitraryState(amps::Array{Complex{Float64}, 1}) = ArbitraryState(amps, length(amps) - 1)
 
+"""
+    Fock(n[, N_cutoff])
+
+Decribes the Fock state ``|n⟩``.
+"""
 struct Fock <: NonDisplaced
 	n::Int
 	N_cutoff::Int
 end
 Fock(n) = Fock(n, n)
 
+"""
+    SqueezedVacuum(r, ϕ[, N_cutoff])
+
+Decribes the a squeezed state with squeezing amplitude `r` and squeezing angle `ϕ`, i.e., the
+state ``\\exp[(ξ^{*} a^2 - ξ a^{\\dagger 2})/2] |0⟩`` with ``ξ = r e^{i ϕ}``.
+"""
 struct SqueezedVacuum <: NonDisplaced
 	r::Float64
 	ϕ::Float64
@@ -40,14 +67,24 @@ SqueezedVacuum(ξ::Complex{Float64}, N_cutoff) = SqueezedVacuum(abs(ξ), angle(�
 #-------------------------------------------------------
 # Displaced States
 
+"""
+    DisplacedArbitraryState(α, amplitudes[, N_cutoff])
+
+Describes a state with specific amplitudes, which then is displaced by ``D(α)``.
+"""
 struct DisplacedArbitraryState <: Displaced
 	α::Complex{Float64}
-	data::Array{Complex{Float64}, 1}
+	amplitudes::Array{Complex{Float64}, 1}
 	N_cutoff::Int
 end
-DisplacedArbitraryState(α, data::Array{Complex{Float64}, 1}) =
-	DisplacedArbitraryState(Complex{Float64}(α), data, length(data) - 1)
+DisplacedArbitraryState(α, amps::Array{Complex{Float64}, 1}) =
+	DisplacedArbitraryState(Complex{Float64}(α), amps, length(amps) - 1)
 
+"""
+	  Fock(n[, N_cutoff])
+
+Decribes the displaced Fock state ``D(α)|n⟩``.
+"""
 struct DisplacedFock <: Displaced
 	α::Complex{Float64}
 	n::Int
@@ -58,7 +95,7 @@ DisplacedFock(α, n) = DisplacedFock(Complex{Float64}(α), n, n)
 #-------------------------------------------------------
 # Implementation of `createState`
 
-createState(wpt::Union{ArbitraryState, DisplacedArbitraryState}) = wpt.data
+createState(wpt::Union{ArbitraryState, DisplacedArbitraryState}) = wpt.amplitudes
 
 function createState(wpt::Union{Fock, DisplacedFock})
 	data = zeros(wpt.N_cutoff + 1)
