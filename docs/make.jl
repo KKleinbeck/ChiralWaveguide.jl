@@ -1,10 +1,18 @@
 using Documenter, ChiralWaveguide
 
 makedocs(
-    sitename = "ChiralWaveguide",
-    pages = ["index.md", "api.md"]
+  sitename = "ChiralWaveguide",
+  modules = [ChiralWaveguide],
+  pages = [
+    "index.md",
+    # "theory.md",
+    "Examples" => [
+      "examples/SinglePhotonScattering.md"
+    ],
+    "api.md"
+  ]
 )
 
 deploydocs(
-    repo = "github.com/KKleinbeck/ChiralWaveguide.jl.git",
+  repo = "github.com/KKleinbeck/ChiralWaveguide.jl.git",
 )

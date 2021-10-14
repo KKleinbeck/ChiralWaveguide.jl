@@ -2,6 +2,7 @@
 /todo.txt
 
 docs/build/
+docs/src/examples/*.jl
 
 .DS_Store
 
