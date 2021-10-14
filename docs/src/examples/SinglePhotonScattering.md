@@ -36,11 +36,11 @@ constructor of `Mode` take care of that, which numerically solves the integrals 
 
 We now have every constituents to define
 ```
-problemA = WaveguideProblem(TwoLevelChain(1), WP, outputMode, 13.0)
+problem = WaveguideProblem(TwoLevelChain(1), wavepacket, outputMode, 13.0)
 ```
 and solve the scattering problem
 ```
-ts, ρs = solve(problemA)
+ts, ρs = solve(problem)
 ```
 
 This already completes the simulation and we can now define the observables of interest.
