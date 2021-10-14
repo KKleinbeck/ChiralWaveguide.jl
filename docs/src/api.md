@@ -72,6 +72,16 @@ GaussMode
 ExpMode
 ```
 
+## Systems
+
+```@docs
+TwoLevelChain
+```
+
+```@docs
+DissipativeLambdaChain
+```
+
 ## Compressions
 
 ```@docs

@@ -1,5 +1,5 @@
 """
-DissipativeLambdaSystem(N_atoms::Int; γd = 1.0, Γ = 0.0)
+    DissipativeLambdaChain(N_atoms::Int; γd = 1.0, Γ = 0.0)
 
 Creates a chain of `N_atoms` three-level atoms with spontaneous decay rate `Γ` and decay rate
 `γd` into the second ground state.

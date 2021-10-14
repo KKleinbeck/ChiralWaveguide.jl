@@ -1,5 +1,5 @@
 """
-TwoLevelChain(N_atoms::Int; Γ = 0.0)
+    TwoLevelChain(N_atoms::Int; Γ = 0.0)
 
 Creates a chain of `N_atoms` two-level atoms with spontaneous decay rate `Γ`.
 The coupling rate is set to 1, but can be modified by scaling the Hamiltonian and coupling operator.
