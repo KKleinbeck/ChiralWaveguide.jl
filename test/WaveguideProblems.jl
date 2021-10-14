@@ -162,6 +162,7 @@ end
   @test sum(tracedistance.(solA, solB)) < 1e-10
 end
 
+using SpecialFunctions
 @testset "Fock State scattering - Kiilerich" begin
 	# ----------------------------------------
 	# Recalculate Figure 2 of PRL 123, 123604 (2019)

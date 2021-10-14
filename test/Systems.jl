@@ -1,5 +1,3 @@
-using SpecialFunctions
-
 @testset "Equivalenz TwoLevelChain - DissipativeLambaChain" begin
 	# ----------------------------------------
 	# At zero γd both models must coincide
@@ -61,6 +59,7 @@ end
   @test abs( 2γd / (1 + γd) - expect(σ_DD, solB) ) < 1e-4
 end
 
+using SpecialFunctions
 @testset "Two Atom scattering" begin
 	# ----------------------------------------
 	# Exact result for scattering a Gaussian mode
