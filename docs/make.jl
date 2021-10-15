@@ -7,7 +7,8 @@ makedocs(
     "index.md",
     # "theory.md",
     "Examples" => [
-      "examples/SinglePhotonScattering.md"
+      "examples/SinglePhotonScattering.md",
+      "examples/CustomSystems.md"
     ],
     "api.md"
   ]
