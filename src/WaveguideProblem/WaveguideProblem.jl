@@ -1,5 +1,5 @@
 """
-    WaveguideProblem(system, [ψᵢ::WavePacket, ψ₀::Mode,] ts)
+    WaveguideProblem(system, [ψᵢ::WavePacket, ψ₀::Array{Mode},] ts)
 
 Defines the waveguide problem for [`solve(x)`](@ref).
 
@@ -7,7 +7,7 @@ Defines the waveguide problem for [`solve(x)`](@ref).
 - system: array of form `[H, σ, ψₛ]` or `[H, Ls, σ, ψₛ]`. `H` is the system Hamiltonian, `Ls` an array
   of system dissipators, `σ` the coupling operator of the system, and `ψₛ` the systems initial state.
 - ψᵢ (optional): the [`WavePacket`](@ref) driving the system.
-- ψₒ (optional): the observed mode.
+- ψₒ (optional): the observed modes (only one possible at the moment).
 - ts: time domain for the simulation. Can be a number, tuple or array. If `ts` is a number the
   simulation is started at `t = 0`.
 """
