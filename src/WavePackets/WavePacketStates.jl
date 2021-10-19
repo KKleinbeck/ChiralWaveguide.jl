@@ -104,7 +104,7 @@ function createState(wpt::Union{Fock, DisplacedFock})
 end
 
 function createState(wpt::SqueezedVacuum)
-	data = zeros(wpt.N_cutoff + 1)
+	data = zeros(Complex{Float64}, wpt.N_cutoff + 1)
 
 	r, ϕ = wpt.r, wpt.ϕ
 	tanh_r, exp_i_ϕ = tanh(r), exp(1im * ϕ)
