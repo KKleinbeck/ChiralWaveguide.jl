@@ -3,9 +3,7 @@ using Documenter, ChiralWaveguide
 makedocs(
   sitename = "ChiralWaveguide",
   modules = [ChiralWaveguide],
-  format = Documenter.HTML(
-        assets = ["assets/favicon.ico"],
-    ),
+  format = Documenter.HTML(assets = ["assets/favicon.ico"]),
   pages = [
     "index.md",
     # "theory.md",
