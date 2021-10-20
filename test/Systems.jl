@@ -74,7 +74,7 @@ using SpecialFunctions
   problem = WaveguideProblem(
     TwoLevelChain(2),
     WavePacket(GaussMode(σ = σ), Fock(1)),
-    Mode(x -> twoAtomOut(-x); compression = Exponential(σ = σ)),
+    Mode(x -> twoAtomOut(-x); compression = Exponential(σ = σ), reltol = 1e-10),
     (-5σ, 20σ)
   )
   sol = ptrace(solve(problem, reltol = 1e-10)[2][end], [1, 2, 3])
