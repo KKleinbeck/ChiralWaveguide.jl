@@ -49,7 +49,8 @@ end
 Fock(n) = Fock(n, n)
 
 """
-    SqueezedVacuum(r, ϕ[, N_cutoff])
+    SqueezedVacuum(r, ϕ = 0.0)
+		SqueezedVacuum(ξ::Complex{Float64}[, N_cutoff])
 
 Decribes the a squeezed state with squeezing amplitude `r` and squeezing angle `ϕ`, i.e., the
 state ``\\exp[(ξ^{*} a^2 - ξ a^{\\dagger 2})/2] |0⟩`` with ``ξ = r e^{i ϕ}``.
@@ -81,7 +82,7 @@ DisplacedArbitraryState(α, amps::Array{Complex{Float64}, 1}) =
 	DisplacedArbitraryState(Complex{Float64}(α), amps, length(amps) - 1)
 
 """
-	  Fock(n[, N_cutoff])
+	  DisplacedFock(α, n[, N_cutoff])
 
 Decribes the displaced Fock state ``D(α)|n⟩``.
 """
