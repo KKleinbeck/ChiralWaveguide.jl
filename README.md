@@ -27,7 +27,7 @@ Yet I fully intend to include all missing features in the future.
 
 ## Roadmap
 
-Right now this package can be considered ready-for use and tested, but there are also many relevant
+Right now this package can be considered ready-for-use and tested, but there are also many relevant
 building pieces missing.
 These include:
 
