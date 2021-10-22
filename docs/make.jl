@@ -9,6 +9,7 @@ makedocs(
     # "theory.md",
     "Examples" => [
       "examples/SinglePhotonScattering.md",
+      "examples/CustomModes.md",
       "examples/CustomSystems.md"
     ],
     "api.md"
