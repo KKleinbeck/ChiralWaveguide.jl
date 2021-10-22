@@ -1,7 +1,7 @@
 # Simulating 1d chiral quantum systems
 
 *ChiralWaveguide.jl* is a simulation package for arbitrary chiral quantum systems, coupled to a
-continuous bosonic background, for example free photons.
+continuous bosonic background with linear dispersion, for example photons.
 This package aims to deliver three promises:
 
 1. A lightweight, descriptive interface. Scattering a Gaussian Fock state on a chiral atom is no
