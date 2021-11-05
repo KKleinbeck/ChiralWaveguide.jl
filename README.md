@@ -27,14 +27,12 @@ Yet I fully intend to include all missing features in the future.
 
 ## Roadmap
 
-Right now this package can be considered ready-for-use and tested, but there are also many relevant
-building pieces missing.
-These include:
+Right now this package can be considered ready-for-use and tested, but there is also room for growth.
+Possible additions include:
 
-1. Provide a full documentation.
-2. Enable the simulation of multiple input and output modes.
-3. Provide more flexibility (allow time-dependant systems, entangled and mixed input states)
-4. Implement even more features and use even more tricks to increase performance.
+1. Enable the simulation of multiple input and output modes.
+2. Provide more flexibility (allow time-dependant systems, entangled and mixed input states)
+3. Implement even more features and use even more tricks to increase performance.
 
 Please feel free to contact me if you intend to use the package at the current state and want to
 know more.
