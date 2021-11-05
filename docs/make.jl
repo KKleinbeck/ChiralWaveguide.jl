@@ -8,6 +8,7 @@ makedocs(
     "index.md",
     # "theory.md",
     "Examples" => [
+      "examples/CoherentInput.md",
       "examples/SinglePhotonScattering.md",
       "examples/CustomModes.md",
       "examples/CustomSystems.md"
