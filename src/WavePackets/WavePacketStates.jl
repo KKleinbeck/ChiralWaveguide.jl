@@ -49,7 +49,7 @@ end
 Fock(n) = Fock(n, n)
 
 """
-    SqueezedVacuum(r, ϕ = 0.0)
+    SqueezedVacuum(r, ϕ = 0.0[, N_cutoff])
 		SqueezedVacuum(ξ::Complex{Float64}[, N_cutoff])
 
 Decribes the a squeezed state with squeezing amplitude `r` and squeezing angle `ϕ`, i.e., the
