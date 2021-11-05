@@ -27,6 +27,10 @@ Coherent
 ```
 
 ```@docs
+ContinuousWave
+```
+
+```@docs
 ArbitraryState
 ```
 

@@ -25,6 +25,12 @@ mutable struct WavePacket{S} <: _WavePacket{S}
   state::S
 end
 
+"""
+    ContinuousWave(α::Union{Number, Function})
+
+A special form of a [`Coherent`](@ref) state. For constant `α` this allows to solver to perform additional
+optimisations. Additionally, expresses the intend of using a non-normalisable input mode.
+"""
 mutable struct ContinuousWave <: _WavePacket{Coherent}
   α::Number
 end
