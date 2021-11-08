@@ -28,7 +28,6 @@ end
 	# ----------------------------------------
 	# With a suitable state perfect absorption is almost possible
   γd =  0.65*rand() + 0.3 # smaller γd need more careful numerical treatment
-	γd =  0.3
   t₀ = -10.0/(1 - γd)
 
   problemA = WaveguideProblem(
