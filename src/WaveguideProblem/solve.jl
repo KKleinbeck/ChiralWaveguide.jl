@@ -14,7 +14,7 @@ Solves the `WaveguideProblem`, using `QuantumOptics.timeevolution.master_nh[_dyn
 # Returns
 - ts:    The times on which the output is determined.
 - ρ(t):  The density matrix at each point in time. The Hilbert space depends on the specific
-         problem; if unsure check out `ρ[1].basis_l`.
+         problem; if unsure check out `basis(ρ[1])`.
 """
 function solve(problem::_DrivenProblem{O, Coherent, ContinuousWave};
 		ρ₀ = nothing, kwargs...) where {O}
@@ -113,7 +113,7 @@ function _generateLindbladian(problem::_DrivenProblem{O, T, WavePacket{T}}, _) w
 	# Scatter System
 	H_sys, σ⁻, σ⁺ = problem.H, problem.σ, problem.σ'
 	σ⁺σ⁻ = σ⁺ * σ⁻
-	idₛ = one(H_sys.basis_l)
+	idₛ = one(basis(H_sys))
 
 	# ----------------------------------------
 	# Input System
@@ -186,7 +186,7 @@ function _generateLindbladian(problem::_ScatterProblem{O, Coherent, WavePacket{C
 	# Scatter System
 	H_sys, σ⁻, σ⁺ = problem.H ⊗ idₒ, problem.σ ⊗ idₒ, problem.σ' ⊗ idₒ
 	σ⁺σ⁻ = σ⁺ * σ⁻
-	idₛ = one(problem.H.basis_l)
+	idₛ = one(basis(problem.H))
 
 	# ----------------------------------------
 	# Embed Operators and abbreviations
@@ -235,7 +235,7 @@ function _generateLindbladian(problem::_ScatterProblem{O, T, WavePacket{T}}, Nou
 	# Scatter System
 	H_sys, σ⁻, σ⁺  = problem.H, problem.σ, problem.σ'
 	σ⁺σ⁻ = σ⁺ * σ⁻
-	idₛ = one(problem.H.basis_l)
+	idₛ = one(basis(problem.H))
 
 	# ----------------------------------------
 	# Input System
