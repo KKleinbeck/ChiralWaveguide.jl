@@ -1,7 +1,3 @@
-# Perfect Absorption
-# Perfect Absorption with output mode
-# Perfect Emission
-
 using SpecialFunctions
 @testset "Two Atom scattering" begin
 	# ----------------------------------------
@@ -76,7 +72,7 @@ end
 @testset "Perfect Absorption" begin
 	# ----------------------------------------
 	# With a suitable state perfect absorption is almost possible
-  γd =  0.65*rand() + 0.3 # smaller γd need more careful numerical treatment
+  γd =  0.5
   t₀ = -10.0/(1 - γd)
 
   problemA = WaveguideProblem(
