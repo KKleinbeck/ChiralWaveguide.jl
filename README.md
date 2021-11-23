@@ -31,7 +31,7 @@ Right now this package can be considered ready-for-use and tested, but there is 
 Possible additions include:
 
 1. Enable the simulation of multiple input and output modes.
-2. Provide more flexibility (allow time-dependant systems, entangled and mixed input states)
+2. Provide more flexibility (e.g. allow time-dependant systems)
 3. Implement even more features and use even more tricks to increase performance.
 
 Please feel free to contact me if you intend to use the package at the current state and want to
