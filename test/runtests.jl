@@ -6,3 +6,5 @@ include("WavePackets.jl")
 include("WaveguideProblems.jl")
 
 include("Systems.jl")
+
+include("solve.jl")

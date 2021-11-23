@@ -1,11 +1,13 @@
 """
-    solve(problem::WaveguideProblem; [Nouts], kwargs...)
+    solve(problem::WaveguideProblem; [ρ₀, Nouts], kwargs...)
 
 Solves the `WaveguideProblem`, using `QuantumOptics.timeevolution.master_nh[_dynamic]`.
 
 # Arguments
 - `problem`: the waveguide problem
 - `Nouts::Array{Int}` (optional): specifies the dimension of the output Fock spaces
+- `ρ₀` (optional): Alternative initial state for the simulation.
+	Overrides the initial state provided by the `WavePacket` and the quantum system.
 - Additional keyword arguments are passed to `QuantumOptics.jl`'s master equation solver,
   see [it's documentation](https://docs.qojulia.org/api/#QuantumOptics.timeevolution.master)
 
@@ -14,26 +16,34 @@ Solves the `WaveguideProblem`, using `QuantumOptics.timeevolution.master_nh[_dyn
 - ρ(t):  The density matrix at each point in time. The Hilbert space depends on the specific
          problem; if unsure check out `ρ[1].basis_l`.
 """
-function solve(problem::_DrivenProblem{O, Coherent, ContinuousWave}; kwargs...) where {O}
+function solve(problem::_DrivenProblem{O, Coherent, ContinuousWave};
+		ρ₀ = nothing, kwargs...) where {O}
 	ψ₀, Ls, H_nh = _generateLindbladian(problem)
+	ρ₀ = isnothing(ρ₀) ? ψ₀ : ρ₀
 
-	return timeevolution.master_nh(problem.ts, ψ₀, H_nh, Ls; kwargs...)
+	return timeevolution.master_nh(problem.ts, ρ₀, H_nh, Ls; kwargs...)
 end
 
-function solve(problem::WaveguideProblem; Nouts::Union{Nothing,Array} = nothing, kwargs...)
+function solve(problem::WaveguideProblem; Nouts::Union{Nothing,Array} = nothing,
+		ρ₀ = nothing,  kwargs...)
 	if problem isa _ScatterProblem
+		if !isnothing(ρ₀)
+			!isnothing(Nouts) && @warn "`Nouts` and `ρ₀` simultaneously set. Ignoring `Nouts`"
+			Nouts = [basis.N for basis ∈ basis(ρ₀).bases[3:end]]
+		end
 		isnothing(Nouts) && ( Nouts = _expectedOutputPhotons(problem) )
 		@assert length(Nouts) == length(problem.ψₒ)
 	end
 
 	ψ₀, Ls, H_nh = _generateLindbladian(problem, Nouts)
+	ρ₀ = isnothing(ρ₀) ? ψ₀ : ρ₀
 
 	function Operators(t, ψ)
 		Ls_t = [Ls[1](t), Ls[2:end]...]
 		return H_nh(t), H_nh(t)', Ls_t, dagger.(Ls_t)
 	end
 
-	return timeevolution.master_nh_dynamic(problem.ts, ψ₀, Operators; kwargs...)
+	return timeevolution.master_nh_dynamic(problem.ts, ρ₀, Operators; kwargs...)
 end
 
 
