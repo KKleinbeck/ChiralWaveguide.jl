@@ -162,53 +162,6 @@ end
   @test sum(tracedistance.(solA, solB)) < 1e-10
 end
 
-using SpecialFunctions
-@testset "Fock State scattering - Kiilerich" begin
-	# ----------------------------------------
-	# Recalculate Figure 2 of PRL 123, 123604 (2019)
-	function outputModeFunctionFig2(t, γ = 1.0, τ = 4.0)
-		abs(t-τ) > 10 && return 0.0
-	  return exp(-(t - τ)^2/2) -
-	    γ * √(π/2) * exp(-γ * (t - τ) / 2 + γ^2 / 8) * erfc((-2(t - τ) + γ) / (2 * √(2)))
-	end
-
-	WP = WavePacket(GaussMode(τ = 4.0), Fock(1))
-	outputMode = Mode(t -> outputModeFunctionFig2(t, 1.0, 4.0), compression = :algebraic)
-
-	problemA = WaveguideProblem(TwoLevelChain(1), WP, outputMode, 13.0)
-	solA     = solve(problemA, reltol = 1e-10)[2]
-	basis    = solA[end].basis_l
-
-	n̂ᵢ, n̂ₒ = embed(basis, 1, number(basis.bases[1])), embed(basis, 3, number(basis.bases[3]))
-	σ⁺σ⁻   = embed(basis, 2, transition(NLevelBasis(2), 2, 2))
-	excitations = n̂ᵢ + n̂ₒ + σ⁺σ⁻
-
-	# particle Number conservation and correct final state
-	particleNumbers = expect(excitations, solA) .|> real
-	@test isapprox.(particleNumbers, 1.0, atol = 1e-5) |> all
-	@test isapprox(ptrace(solA[end], [1, 2]).data[end, end], 1.0, atol = 1e-3)
-
-	# ----------------------------------------
-	# Two photon scattering
-	WP2 = WavePacket(GaussMode(τ = 4.0), Fock(2))
-
-	problemB = WaveguideProblem(TwoLevelChain(1), WP2, WP2.mode, 13.0)
-	solB     = solve(problemB, reltol = 1e-10)[2]
-
-	@test isapprox(
-		ptrace(solB[end], [1, 2]).data[end, end] |> real,
-		0.639387^2, atol = 1e-3
-	) # See `Two Photon Overlaps.nb` for magic numbers
-
-	problemB = WaveguideProblem(TwoLevelChain(1), WP2, outputMode, 13.0)
-	solB     = solve(problemB, reltol = 1e-10)[2]
-
-	@test isapprox(
-		ptrace(solB[end], [1, 2]).data[end, end] |> real,
-		0.17789^2, atol = 1e-3
-	) # See `Two Photon Overlaps.nb` for magic numbers
-end
-
 @testset "DrivenProblem - DisplacedFock" begin
 	# ----------------------------------------
 	# Compare the `DisplacedFock` implementation to the manually created version

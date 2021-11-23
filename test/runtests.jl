@@ -8,3 +8,5 @@ include("WaveguideProblems.jl")
 include("Systems.jl")
 
 include("solve.jl")
+
+include("ExactResults.jl")
