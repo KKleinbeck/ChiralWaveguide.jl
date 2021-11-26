@@ -1,6 +1,7 @@
 /Manifest.toml
 /todo.txt
 
+docs/Manifest.toml
 docs/build/
 docs/src/examples/*.jl
 

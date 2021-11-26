@@ -5,7 +5,7 @@ include("./Couplings.jl")
 export generateCoupling, modeContribution, modifiedMode
 
 include("./ModeFunctions.jl")
-export Mode, HardBoxMode, SoftBoxMode, SoftBoxExpMode, GaussMode, ExpMode
+export Mode, FourierMode, HardBoxMode, SoftBoxMode, SoftBoxExpMode, GaussMode, ExpMode
 
 include("./WavePacketStates.jl")
 export WavePacketState, Displaced, NonDisplaced,

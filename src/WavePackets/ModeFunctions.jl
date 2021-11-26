@@ -36,12 +36,87 @@ end
 
 
 """
+    FourierMode(a0, an = [], bn = []; t₀ = 0.0, σ = 1.0)
+
+General Fourier Series for a mode in the time bin `(t₀, t₀ + σ)`, with mode function
+
+``m(t) = a0 / σ + \\frac{2}{σ} \\sum_n a_n \\cos(2π n (t - t₀) / σ) + \\frac{2}{σ} \\sum_n b_n \\sin(2π n (t - t₀) / σ).``
+
+The coefficients `a0`, `an`, `bn` do not have to be normalised to provide the correct coupling rates.
+"""
+function FourierMode(a0, an = [], bn = []; t₀ = 0.0, σ = 1.0)
+  @assert σ > 0.
+  function modefunction(t)
+    t₀ < t < t₀ + σ || return 0.0
+
+    res  = a0 / √(σ)
+    !isempty(an) && (res += sum([√(2/σ) * an[n] * cos(2π * n * (t - t₀) / σ) for n ∈ 1:length(an)]))
+    !isempty(bn) && (res += sum([√(2/σ) * bn[n] * sin(2π * n * (t - t₀) / σ) for n ∈ 1:length(bn)]))
+    return res
+  end
+
+  function norm(t)
+    t ≤ t₀     && return 0.0
+		t₀ + σ ≤ t && return a0^2 + ( isempty(an) ? 0.0 : sum(abs2, an) ) + ( isempty(bn) ? 0.0 : sum(abs2, bn) )
+
+    res = a0^2 * (t - t₀) / σ
+		if !isempty(an)
+    	res += sum(
+				[an[n]^2 * ((t-t₀)/σ + sin(4π * n * (t-t₀) / σ) / (4π * n)) for n ∈ 1:length(an)]
+			)
+			res += √(2) * sum(
+				[a0 * an[n] * sin(2π * n * (t-t₀) / σ)  / (π * n) for n ∈ 1:length(an)]
+			)
+			res += sum(
+				[an[n] * an[m] * ( sin(2π * (m-n) * (t-t₀) / σ) / (m-n) + sin(2π * (m+n) * (t-t₀) / σ) / (m+n) ) / (2π)
+	      for n ∈ 1:length(an), m ∈ 1:length(an) if n != m]
+			)
+		end
+
+		if !isempty(bn)
+    	res += sum(
+				[bn[n]^2 * ((t-t₀)/σ - sin(4π * n * (t-t₀) / σ) / (4π * n)) for n ∈ 1:length(bn)]
+			)
+	    res += √(2) * sum(
+				[a0 * bn[n] * (1 - cos(2π * n * (t-t₀) / σ)) / (π * n) for n ∈ 1:length(bn)]
+			)
+			res += sum(
+				[bn[n] * bn[m] * ( sin(2π * (m-n) * (t-t₀) / σ) / (m-n) - sin(2π * (m+n) * (t-t₀) / σ) / (m+n) ) / (2π)
+	      for n ∈ 1:length(bn), m ∈ 1:length(bn) if n != m]
+			)
+		end
+
+		if !isempty(an) && !isempty(bn)
+	    res += 2 * sum(
+				[an[n] * bn[m] * ( 2m - (m+n) * cos(2π * (m-n) * (t-t₀) / σ) - (m-n) * cos(2π * (m+n) * (t-t₀) / σ) ) / (2π * (m^2 - n^2))
+	      for n ∈ 1:length(an), m ∈ 1:length(bn) if n != m]
+			)
+	    res += 2 * sum(
+				[an[n] * bn[n] * sin(2π * n * (t-t₀) / σ)^2 / (2π * n)
+	      for n ∈ 1:min(length(an),length(bn))]
+			)
+		end
+
+    return res
+  end
+
+  return Mode(modefunction,
+    t -> t₀ < t < t₀ + σ ?  modefunction(t) / √(norm(t₀ + σ) - norm(t)) : 0,
+    t -> t₀ < t < t₀ + σ ? -modefunction(t) / √(               norm(t)) : 0,
+    norm
+  )
+end
+
+
+"""
     HardBoxMode(; t₀ = 0.0, σ = 1.0)
 
-The mode is a box function, i.e., the mode takes the value ``1 / \\sqrt{σ}`` for ``t₀ < t < t₀ + σ``
-and 0 otherwise.
+The mode is a box function, i.e., it takes the value ``1 / \\sqrt{σ}`` for ``t₀ < t < t₀ + σ``
+and 0 otherwise. This can be regarded as the special case of a [`FourierMode`](@ref), i.e.,
+`FourierMode(1, [], [])`.
 """
 function HardBoxMode(; t₀ = 0.0, σ = 1.0)
+	@assert σ > 0
 	function norm(t)
 		t < t₀     && return 0.0
 		t < t₀ + σ && return t / σ
@@ -56,7 +131,6 @@ function HardBoxMode(; t₀ = 0.0, σ = 1.0)
 end
 
 
-
 """
     SoftBoxMode(; τ = 0.0, σ = 1.0, n::Int = 10)
 
@@ -65,6 +139,7 @@ The mode is an approximation to the box mode,
 The parameters `τ` and `σ` control the center and width respectively, `n` the exponent.
 """
 function SoftBoxMode(; τ = 0.0, σ = 1.0, n::Int = 10)
+	@assert σ > 0
   n̄ = 2n
   norm = π * csc(π / n̄) / n̄
 
@@ -112,6 +187,8 @@ A box mode with exponential decaying flanks, given by
 The parameters `τ` and `σ` control the center and width respectively, `γ` the deay rate.
 """
 function SoftBoxExpMode(; τ = 0.0, σ = 1.0, γ = 10.0)
+	@assert σ > 0
+	@assert γ > 0
 	function softBoxExp(t; γ = 10.0)
 	  t = abs(t)
 	  return t > 0.5 ? exp(-γ * (t-1/2)) : 1.0

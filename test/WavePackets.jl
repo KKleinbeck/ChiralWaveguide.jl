@@ -26,6 +26,7 @@ end
 
 @testset "Numerical Mode Couplings" begin
 	modes = [
+		FourierMode(1/√(5), [1/√(5), 1/√(5)], [1/√(5), 1/√(5)], σ = 3.0),
 		HardBoxMode(σ = 3.0),    # give a width to help the integrator
 		SoftBoxMode(σ = 3.0),    # A little bit of fine tuning is involved here, but
 		SoftBoxExpMode(σ = 2.5), # I simple want to test the normalisation conditions.
@@ -51,11 +52,24 @@ end
 	end
 end
 
+@testset "FourierMode and HardBoxMode equivalence" begin
+	hb = HardBoxMode()
+	f  = FourierMode(1., [], [])
+
+	ts = range(0.0, 1.0, length = 101)
+
+	@test sum(abs, hb.modeFunction.(ts) .- f.modeFunction.(ts)) / length(ts) < 1e-9
+	@test sum(abs, hb.gᵢ.(ts) .- f.gᵢ.(ts)) / length(ts) < 1e-9
+	@test sum(abs, hb.gₒ.(ts) .- f.gₒ.(ts)) / length(ts) < 1e-9
+	@test sum(abs, hb.norm.(ts) .- f.norm.(ts)) / length(ts) < 1e-9
+end
+
 using QuantumOptics
 @testset "Cavity Hopping" begin
 	# Idea of this test is, that a cavity for a given mode
 	# should have 100% into a cavity for the same mode.
 	modes = [
+		FourierMode(rand(), rand(2), rand(2), t₀ = -5.0),
 		HardBoxMode(t₀ = -5.0),
 		SoftBoxMode(),
 		SoftBoxExpMode(),

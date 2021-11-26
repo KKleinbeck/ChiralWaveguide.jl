@@ -1,5 +1,11 @@
 [deps]
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+HypergeometricFunctions = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
+QuantumOptics = "6e0679c1-51ea-5a7c-ac74-d61b76210b0c"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 Documenter = "0.27"

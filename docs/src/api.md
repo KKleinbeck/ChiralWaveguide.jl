@@ -57,6 +57,10 @@ Mode
 ```
 
 ```@docs
+FourierMode
+```
+
+```@docs
 HardBoxMode
 ```
 
