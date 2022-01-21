@@ -10,11 +10,11 @@ mutable struct _DrivenProblem{O, S <: WavePacketState, WP <: _WavePacket{S}} <: 
 end
 
 
-function WaveguideProblem(sys, ts, disp_out = false)
+function WaveguideProblem(sys, ts, disp_out::Bool = false)
 	WaveguideProblem(sys, NoPacket(), ts, false)
 end
 
-function WaveguideProblem(sys, ψᵢ::_WavePacket, ts, disp_out = false)
+function WaveguideProblem(sys, ψᵢ::_WavePacket, ts, disp_out::Bool = false)
 	disp_out && @warn("Displacing the output ineffective without output modes")
 	ts isa StepRangeLen || (ts = _toRange(ts))
 
