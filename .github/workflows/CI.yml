@@ -11,7 +11,7 @@ jobs:
       matrix:
         version:
           - 'nightly'
-          - `1.6`
+          - '1.6'
           - '1.2'
         os:
           - ubuntu-latest
