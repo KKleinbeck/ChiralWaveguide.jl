@@ -136,7 +136,7 @@ end
 	problemB = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
     ContinuousWave(t -> e^(-t^2 / 2)), ts
   )
-	solB = solve(problemA, Nouts = [6], reltol = 1e-10)[2]
+	solB = solve(problemB, Nouts = [6], reltol = 1e-10)[2]
 
 	@test sum(tracedistance.(solA, solB)) ≈ 0.0
 end
