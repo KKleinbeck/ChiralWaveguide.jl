@@ -1,3 +1,5 @@
+using SpecialFunctions
+
 @testset "DrivenProblem - Absence of Dissipator" begin
 	# ----------------------------------------
 	# DrivenProblem - empty Dissipator
@@ -129,16 +131,16 @@ end
 
 	ts = range(-5.0, 5.0, length = 101)
 	problemA = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
-    WavePacket(GaussMode(), Coherent( (2π)^(1/4) )), ts
+    WavePacket(GaussMode(), Coherent( (π)^(1/4) )), ts
   )
 	solA = solve(problemA, Nouts = [6], reltol = 1e-10)[2]
 
 	problemB = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
-    ContinuousWave(t -> e^(-t^2 / 2)), ts
+    ContinuousWave(t -> exp(-t^2 / 2)), ts
   )
 	solB = solve(problemB, Nouts = [6], reltol = 1e-10)[2]
 
-	@test sum(tracedistance.(solA, solB)) ≈ 0.0
+	@test sum(tracedistance.(solA, solB)) < 1e-12
 end
 
 @testset "Controlling the output Fock space" begin
