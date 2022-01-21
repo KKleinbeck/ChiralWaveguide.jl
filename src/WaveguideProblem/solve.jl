@@ -170,7 +170,8 @@ function _generateLindbladian(problem::_ScatterProblem{O, Coherent, ContinuousWa
 			[problem.H, problem.Ls, problem.σ, problem.system_state],
 			ContinuousWave(t -> problem.ψᵢ.α),
 			problem.ψₒ,
-			problem.ts
+			problem.ts,
+			problem.displace_output
 		),
 		Nouts
 	)
@@ -213,11 +214,20 @@ function _generateLindbladian(problem::_ScatterProblem{O, Coherent, WavePacket{C
 		-0.5im * σ⁺σ⁻ :
 		-0.5im * σ⁺σ⁻ - 0.5im * sum([L'*L for L ∈ problem.Ls]) ⊗ idₒ
 
-	function H_nh(t)
-		return atomic_dissipation - 0.5im * sum([gₒ(t)^2 for gₒ ∈ gₒs] .* aₒᵀaₒs) -
-			1.0im * sum([gₒ(t) for gₒ ∈ gₒs] .* aₒᵀσ⁻s) -
-			1.0im * (Lᵀ(t) * α * mf(t) - L(t) * α' * mf(t)) +
-			H_sys
+	if problem.displace_output
+		H_nh = function(t)
+			return atomic_dissipation - 0.5im * sum([gₒ(t)^2 for gₒ ∈ gₒs] .* aₒᵀaₒs) -
+				1.0im * sum([gₒ(t) for gₒ ∈ gₒs] .* aₒᵀσ⁻s) -
+				1.0im * (σ⁺ * α * mf(t) - σ⁻ * α' * mf(t)) +
+				H_sys
+		end
+	else
+		H_nh = function(t)
+			return atomic_dissipation - 0.5im * sum([gₒ(t)^2 for gₒ ∈ gₒs] .* aₒᵀaₒs) -
+				1.0im * sum([gₒ(t) for gₒ ∈ gₒs] .* aₒᵀσ⁻s) -
+				1.0im * (Lᵀ(t) * α * mf(t) - L(t) * α' * mf(t)) +
+				H_sys
+		end
 	end
 
 	ψ₀ = problem.system_state ⊗ groundstateOutput

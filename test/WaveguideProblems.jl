@@ -1,4 +1,4 @@
-using SpecialFunctions
+using GSL
 
 @testset "DrivenProblem - Absence of Dissipator" begin
 	# ----------------------------------------
@@ -141,6 +141,45 @@ end
 	solB = solve(problemB, Nouts = [6], reltol = 1e-10)[2]
 
 	@test sum(tracedistance.(solA, solB)) < 1e-12
+end
+
+@testset "ContinuesWave(::Function) - displace output" begin
+	# ----------------------------------------
+	# Show that displacing the output generates correct result
+	function displaceProper(basis, α)
+	  operator = DenseOperator(basis)
+
+	  αc, α2, eα2 = -conj(α), abs2(α), exp(-0.5abs2(α))
+
+	  for m ∈ 1:basis.N
+	    operator.data[m, m] = eα2 * sf_laguerre_n(m - 1, 0, α2)
+	    for n ∈ m:basis.N+1
+	      c = √(factorial(m - 1.0)/factorial(n - 1.0)) * eα2 * sf_laguerre_n(m - 1, n-m, α2)
+	      operator.data[m, n] = c * αc^(n-m)
+	      operator.data[n, m] = c * α^(n-m)
+	    end
+	  end
+	  return operator
+	end
+
+	testBasis = SpinBasis(1//2)
+	σm, σp = sigmam(testBasis), sigmap(testBasis)
+	α = 1.0 + rand()
+
+	problemA = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+    ContinuousWave(α), HardBoxMode(t₀ = 1.0), 2.0
+  )
+	solA = ptrace(solve(problemA, Nouts = [ceil(Int, α^2 + 10α)], reltol = 1e-10)[2][end], 1)
+
+	problemB = WaveguideProblem((σm+σp, [], σm, spindown(testBasis)),
+    ContinuousWave(α), HardBoxMode(t₀ = 1.0), 2.0, true
+  )
+	solB = ptrace(solve(problemB, Nouts = [ceil(Int, α^2 + 10α)], reltol = 1e-10)[2][end], 1)
+
+	D = displaceProper(basis(solB), α)
+	solB = D * solB * D'
+
+	@test tracedistance(solA, solB) |> real < 1e-5
 end
 
 @testset "Controlling the output Fock space" begin

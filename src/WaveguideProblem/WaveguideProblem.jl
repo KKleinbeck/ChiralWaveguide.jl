@@ -1,5 +1,5 @@
 """
-    WaveguideProblem(system, [ψᵢ::WavePacket, ψ₀::Array{Mode},] ts)
+    WaveguideProblem(system, [ψᵢ::WavePacket, ψ₀::Array{Mode},] ts, [displace_output])
 
 Defines the waveguide problem for [`solve(x)`](@ref).
 
@@ -10,6 +10,8 @@ Defines the waveguide problem for [`solve(x)`](@ref).
 - ψₒ (optional): the observed modes (only one possible at the moment).
 - ts: time domain for the simulation. Can be a number, tuple or array. If `ts` is a number the
   simulation is started at `t = 0`.
+- displace_output (optional): Removes the couplong between input and output modes when the input is
+  a coherent state, i.e., work in a frame where the output modes are displaced accordingly.
 """
 abstract type WaveguideProblem end
 
