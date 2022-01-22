@@ -15,6 +15,7 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 DifferentialEquations = "6, 7"
+GSL = "1"
 HypergeometricFunctions = "0.3"
 QuadGK = "2"
 QuantumOptics = "0.7, 1"
