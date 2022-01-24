@@ -48,17 +48,29 @@ end
 
 
 function _expectedOutputPhotons(problem::_ScatterProblem{O, Coherent, ContinuousWave}) where {O}
+	if problem.displace_output
+		return fill(ceil(Int, 3 * sqrt(problem.ts[end] - problem.ts[1]) ), length(problem.ψₒ) )
+	end
 	fill(coherent_cutoff( sqrt( (problem.ts[end] - problem.ts[1]) * abs2(problem.ψᵢ.α) ) ),
 		length(problem.ψₒ)
 	)
 end
 
 function _expectedOutputPhotons(problem::_ScatterProblem{O, Coherent, WavePacket{Coherent}}) where {O}
+	if problem.displace_output
+		return fill(ceil(Int, 3 * sqrt(problem.ts[end] - problem.ts[1]) ), length(problem.ψₒ) )
+	end
 	N = problem.ψᵢ.state.N_cutoff
 	fill(N, length(problem.ψₒ))
 end
 
 function _expectedOutputPhotons(problem::_ScatterProblem{O, S, WavePacket{S}}) where {O, S <: Displaced}
+	if problem.displace_output
+		return fill(
+			roblem.ψᵢ.state.N_cutoff + ceil(Int, 3 * sqrt(problem.ts[end] - problem.ts[1]) ),
+			length(problem.ψₒ)
+		)
+	end
 	N = problem.ψᵢ.state.N_cutoff + coherent_cutoff(problem.ψᵢ.state.α)
 	fill(N, length(problem.ψₒ))
 end
