@@ -4,6 +4,7 @@ authors = ["Kevin Kleinbeck <kleinbeck@itp3.uni-stuttgart.de"]
 version = "0.0.1"
 
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 GSL = "92c85e6c-cbff-5e0c-80f7-495c94daaecd"
 HypergeometricFunctions = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
