@@ -27,16 +27,16 @@ ts, ρs = @btime solve($problem) # 161.369 ms (21107 allocations: 2.88 MiB)
 Firstly, it tells the solver that the input is a coherent state and therefore the input cavity can be eliminated from the start.
 This can be seen by
 ```
-ρs[end].basis_l # NLevel(N=2)
+basis(ρs[end]) # NLevel(N=2)
 ```
-i.e., `ρs` only stores the dynamic of the atom.
+i.e., `ρs` only stores the state of the atom.
 Secondly, if a constant is passed to `ContinuousWave` the solver knows that the master equation is time independent and falls back to a faster implementation for time-independent master equations.
 Of course `ContinuousWave` can also describe time dependence, but loosing the second advantage by doing so:
 ```
 problem = WaveguideProblem(TwoLevelChain(1), ContinuousWave(t -> α), tf)
 ts, ρs = @btime solve($problem) # 204.156 ms (51074 allocations: 4.77 MiB)
 ```
-In the minimalistic example the difference is small, but becomes more significant for growing systems.
+In the minimalistic example the difference is small, but becomes more significant for larger systems.
 
 ## Coherent state input
 Using `Coherent` instead of `ContinuousWave` primarily expresses the intent of using a proper mode, instead of a non-normalisable driving function.
@@ -74,7 +74,7 @@ ts, ρs_full = @btime solve($problem) # 1.300 s (282065 allocations: 560.71 MiB)
 and is the significant slowest version.
 Yet, we now may observe the input cavity and its entanglement with the quantum system or output cavity
 ```
-ρs_full[end].basis_l # [Fock(cutoff=17) ⊗ NLevel(N=2)]
+basis(ρs_full[end]) # [Fock(cutoff=17) ⊗ NLevel(N=2)]
 ```
 Lastly, we verify that this approach yields the correct result for the atom's state
 ```
