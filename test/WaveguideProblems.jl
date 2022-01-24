@@ -153,7 +153,7 @@ using GSL, SpecialFunctions
 	  for m ∈ 1:basis.N
 	    operator.data[m, m] = eα2 * sf_laguerre_n(m - 1, 0, α2)
 	    for n ∈ m:basis.N+1
-	      c = √(factorial(m - 1.0)/factorial(n - 1.0)) * eα2 * sf_laguerre_n(m - 1, n-m, α2)
+	      c = √(gamma(m)/gamma(n)) * eα2 * sf_laguerre_n(m - 1, n-m, α2)
 	      operator.data[m, n] = c * αc^(n-m)
 	      operator.data[n, m] = c * α^(n-m)
 	    end
