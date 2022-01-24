@@ -1,5 +1,3 @@
-using GSL
-
 @testset "DrivenProblem - Absence of Dissipator" begin
 	# ----------------------------------------
 	# DrivenProblem - empty Dissipator
@@ -143,6 +141,7 @@ end
 	@test sum(tracedistance.(solA, solB)) < 1e-12
 end
 
+using GSL, SpecialFunctions
 @testset "ContinuesWave(::Function) - displace output" begin
 	# ----------------------------------------
 	# Show that displacing the output generates correct result
